@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Ghumo: a pocket city guide for Ahmedabad with Kesar the cat. Every find becomes a postmarked stamp.">
+<title>Ghumo Pocket Roamer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Pixel&display=swap">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<style>
+/* Layout: one product shot on a soft studio ground; a short printed card beside it (stacks under it on phones). */
+:root{
+  --ground:#E8E7EC; --ground-2:#F8F7FA; --ink:#17161B; --muted:#67656F; --hair:rgba(23,22,27,.12);
+  --accent:#D20E2C; --chip:#FFFFFF; --floor:rgba(36,30,40,.28);
+  --f-ui:"Geist",ui-sans-serif,system-ui,sans-serif;
+  --f-px:"Geist Pixel","Geist",ui-sans-serif,sans-serif;
+  /* stamp inks: red, cobalt, mustard, green */
+  --i-red:#C41E2A; --i-blue:#2449B3; --i-mus:#A88219; --i-green:#24684A;
+  --spring:cubic-bezier(.34,1.56,.64,1); --glide:cubic-bezier(.65,0,.35,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --ground:#131216; --ground-2:#222027; --ink:#EEEDF3; --muted:#9D9AA8; --hair:rgba(255,255,255,.12); --accent:#FF5367; --chip:#211F27; --floor:rgba(0,0,0,.6); color-scheme:dark }
+}
+:root[data-theme="dark"]{ --ground:#131216; --ground-2:#222027; --ink:#EEEDF3; --muted:#9D9AA8; --hair:rgba(255,255,255,.12); --accent:#FF5367; --chip:#211F27; --floor:rgba(0,0,0,.6); color-scheme:dark }
+
+html,body{min-height:100%}
+body{background:radial-gradient(80% 70% at 38% 42%, var(--ground-2), transparent 72%), var(--ground); color:var(--ink); font-family:var(--f-ui); font-size:15px; line-height:1.5}
+.page{min-height:100vh; box-sizing:border-box; max-width:1180px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:44px; align-items:center;
+  padding-block:28px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+@media (max-width:920px){ .page{grid-template-columns:minmax(0,1fr); gap:28px; min-height:0} }
+
+/* ---------- device ---------- */
+.stage{display:flex; justify-content:center; min-width:0; perspective:1600px}
+.stage-box{position:relative; width:calc(524px * var(--s,1)); height:calc(470px * var(--s,1))}
+.dwrap{position:absolute; left:0; top:0; width:524px; height:470px; transform-origin:0 0; transform:scale(var(--s,1))}
+.floor{position:absolute; left:60px; right:60px; bottom:12px; height:48px; background:radial-gradient(closest-side, var(--floor), transparent); filter:blur(9px)}
+.device{position:absolute; left:24px; top:76px; width:476px; height:356px; border-radius:48px; user-select:none; -webkit-user-select:none;
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform .6s var(--glide);
+  background:radial-gradient(110% 80% at 22% 0%, var(--sh-hi), transparent 60%), linear-gradient(170deg, var(--sh) 0%, var(--sh-lo) 100%);
+  box-shadow:inset 0 2px 1px var(--sh-rim), inset 0 -10px 22px rgba(0,0,0,.10), inset 0 0 0 1px rgba(0,0,0,.05),
+    0 2px 3px rgba(20,20,30,.10), 0 26px 50px -22px rgba(30,20,40,.42), 0 70px 100px -50px rgba(30,20,40,.40)}
+.device[data-shell="stone"]{--sh:#ECEAE4; --sh-hi:#FFFFFF; --sh-lo:#D5D2CA; --sh-rim:rgba(255,255,255,.95); --grip:#9AA98A; --grip-lo:#7D8C6E; --roll:#E9E6DF; --roll-lo:#BDB9AF;
+  --okc:#1F1F23; --okc-lo:#000; --bkc:#F8F6F1; --bkc-lo:#B9B4A8}
+.device[data-shell="sage"]{--sh:#A6B795; --sh-hi:#CEDBC1; --sh-lo:#899D78; --sh-rim:rgba(255,255,255,.65); --grip:#EAE6DC; --grip-lo:#CFCABE; --roll:#B3C3A3; --roll-lo:#7E926D;
+  --okc:#1F1F23; --okc-lo:#000; --bkc:#F4F1EA; --bkc-lo:#A9A497}
+.device[data-shell="ink"]{--sh:#2C2C31; --sh-hi:#4A4A52; --sh-lo:#1B1B1F; --sh-rim:rgba(255,255,255,.2); --grip:#56565D; --grip-lo:#3A3A40; --roll:#3A3A41; --roll-lo:#1C1C20;
+  --okc:#F4F2EC; --okc-lo:#A9A49A; --bkc:#5A5A61; --bkc-lo:#232327}
+.grip{position:absolute; left:-7px; top:74px; width:13px; height:208px; border-radius:7px;
+  background:repeating-linear-gradient(180deg, var(--grip) 0 3px, var(--grip-lo) 3px 4px, var(--grip) 4px 6px); box-shadow:inset -2px 0 3px rgba(0,0,0,.18), -2px 4px 8px -2px rgba(0,0,0,.25)}
+.peek{position:absolute; left:126px; top:-62px; width:104px; height:64px; overflow:hidden; pointer-events:none}
+#kco{position:absolute; left:12px; top:0; width:80px; height:80px; transform:translateY(84px); pointer-events:auto; cursor:pointer}
+.bezel{position:absolute; left:22px; top:22px; width:312px; height:312px; border-radius:32px; background:linear-gradient(155deg,#2A2B2D,#0F1011);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(0,0,0,.75), 0 1px 0 var(--sh-rim)}
+.lens{position:absolute; left:373px; top:32px; width:64px; height:64px; border-radius:20px; background:linear-gradient(160deg, var(--sh-hi), var(--sh-lo));
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.28), inset 0 -1px 0 var(--sh-rim)}
+.lens::before{content:""; position:absolute; inset:16px; border-radius:50%; background:radial-gradient(circle at 38% 36%, #5d6470 0 8%, #15171b 26%, #050506 70%); box-shadow:0 0 0 3px #1b1c1f, 0 0 0 4px rgba(255,255,255,.25), 0 3px 6px rgba(0,0,0,.4)}
+.lens::after{content:""; position:absolute; left:27px; top:25px; width:6px; height:4px; border-radius:50%; background:rgba(255,255,255,.55); transform:rotate(-30deg)}
+.lens.flash::before{animation:flashl .4s}
+@keyframes flashl{30%{background:#fff; box-shadow:0 0 18px 6px rgba(255,255,255,.9)}}
+.pocket{position:absolute; left:369px; top:112px; width:72px; height:96px; border-radius:22px; cursor:ns-resize; touch-action:none;
+  background:linear-gradient(180deg, var(--sh-lo), var(--sh)); box-shadow:inset 0 4px 9px rgba(0,0,0,.32), inset 0 -1px 0 var(--sh-rim)}
+.roller{position:absolute; left:10px; right:10px; top:12px; bottom:12px; border-radius:15px; --ro:0px;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.08) 0 1px, transparent 1px 7px) 0 var(--ro)/100% 100%,
+    linear-gradient(180deg, var(--roll-lo) 0%, var(--roll) 30%, var(--sh-hi) 50%, var(--roll) 70%, var(--roll-lo) 100%);
+  box-shadow:0 4px 6px rgba(0,0,0,.28), inset 0 0 0 1px rgba(0,0,0,.06); transition:background-position .25s var(--spring), transform .25s var(--spring)}
+.pocket.up .roller{transform:translateY(-2px)} .pocket.dn .roller{transform:translateY(2px)}
+.ok{all:unset; position:absolute; left:372px; top:228px; width:66px; height:66px; border-radius:50%; cursor:pointer;
+  background:radial-gradient(circle at 36% 28%, rgba(255,255,255,.32), transparent 46%), var(--okc);
+  box-shadow:0 6px 0 var(--okc-lo), 0 10px 16px -3px rgba(0,0,0,.35), inset 0 -3px 6px rgba(0,0,0,.18); transition:transform .12s var(--spring), box-shadow .12s}
+.ok::before,.back::before{content:""; position:absolute; inset:-12px; border-radius:50%}
+.ok:active,.ok.down{transform:translateY(5px) scale(.97); box-shadow:0 1px 0 var(--okc-lo), 0 3px 6px rgba(0,0,0,.3), inset 0 -2px 5px rgba(0,0,0,.18)}
+.back{all:unset; position:absolute; left:378px; top:308px; width:54px; height:22px; border-radius:11px; cursor:pointer;
+  background:radial-gradient(80% 120% at 40% 0%, rgba(255,255,255,.4), transparent 60%), var(--bkc); box-shadow:0 4px 0 var(--bkc-lo), 0 6px 9px -2px rgba(0,0,0,.3); transition:transform .12s var(--spring), box-shadow .12s}
+.back:active,.back.down{transform:translateY(3px); box-shadow:0 1px 0 var(--bkc-lo)}
+
+/* ---------- the screen: dark by default, paper-light in light mode ---------- */
+.screen{position:absolute; inset:8px; border-radius:25px; overflow:hidden; font-family:var(--f-ui); font-size:14px; line-height:1.3; isolation:isolate; -webkit-font-smoothing:antialiased;
+  --s-bg:#0B0B0E; --s-fg:#F5F4F0; --s-dim:rgba(245,244,240,.56); --s-tile:#1B1B20; --s-tile-2:#26262C; --s-on:#111114; --s-dot:#2E2E35;
+  --paper:#F3EEE3; --p-ink:#161514; --glass:rgba(11,11,14,.62); --shadow:rgba(0,0,0,.55);
+  --ly-off:rgba(255,255,255,.26); --ly-past:rgba(255,255,255,.52); --ly-on:#fff; --lybg:blur(24px) brightness(.42) saturate(1.3);
+  background:var(--s-bg); color:var(--s-fg)}
+.screen[data-mode="light"]{--s-bg:#ECE8DF; --s-fg:#151517; --s-dim:rgba(21,21,23,.56); --s-tile:#DFDACF; --s-tile-2:#D3CDC0; --s-on:#F7F4EE; --s-dot:#CBC5B8;
+  --paper:#FCFAF5; --glass:rgba(252,250,245,.78); --shadow:rgba(70,50,30,.28);
+  --ly-off:rgba(21,21,23,.26); --ly-past:rgba(21,21,23,.5); --ly-on:#151517; --lybg:blur(26px) brightness(1.35) saturate(.8) opacity(.5)}
+.screen::after{content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; z-index:40; background:linear-gradient(125deg, rgba(255,255,255,.07), rgba(255,255,255,0) 32%)}
+#views{position:absolute; inset:0}
+.view{position:absolute; inset:0; display:flex; flex-direction:column; background:var(--s-bg); will-change:clip-path,transform}
+.ch{display:inline-block; animation:rise .7s var(--spring) backwards; animation-delay:calc(var(--i)*22ms + 120ms)}
+.w{display:inline-block; white-space:nowrap}
+@keyframes rise{from{transform:translateY(80%) rotate(10deg); opacity:0}}
+.st{animation:pop .65s var(--spring) backwards; animation-delay:calc(var(--d,0)*60ms + 100ms)}
+@keyframes pop{from{transform:translateY(16px) scale(.9); opacity:0}}
+.tap{cursor:pointer; transition:transform .35s var(--spring), background .25s, box-shadow .3s}
+.tap:active{transform:scale(.94)}
+.rip{position:absolute; border-radius:50%; background:rgba(127,127,127,.35); pointer-events:none; width:16px; height:16px; margin:-8px 0 0 -8px; animation:rip .6s ease-out forwards; z-index:5}
+@keyframes rip{to{transform:scale(14); opacity:0}}
+.top{display:flex; align-items:center; gap:10px; padding:12px 14px 0; height:40px; flex:none}
+.bk{width:40px; height:40px; border-radius:50%; background:var(--s-tile); display:grid; place-items:center; flex:none; z-index:6; color:var(--s-fg)}
+.bk svg{width:18px; height:18px}
+.ttl{font:400 22px/1 var(--f-px); letter-spacing:-.01em}
+.ttl small{font-size:13px; color:var(--s-dim); margin-left:6px}
+.btn{height:48px; border-radius:24px; display:flex; align-items:center; justify-content:center; gap:9px; font:400 16px/1 var(--f-px); background:var(--s-fg); color:var(--s-on); flex:1; position:relative; overflow:hidden}
+.btn.alt{background:var(--s-tile); color:var(--s-fg); flex:none; width:48px}
+.btn svg{width:19px; height:19px; flex:none}
+.acts{margin-top:auto; padding:10px 14px 14px; display:flex; gap:8px; flex:none}
+.btn .ar{transition:transform .4s var(--spring)}
+.btn:hover .ar{transform:translateX(4px)}
+
+/* ---------- stamps ---------- */
+/* perforated paper: a grid of holes along the edge (mask), drop shadow on the wrapper */
+.stamp{position:relative; filter:drop-shadow(0 6px 9px var(--shadow))}
+.sp{position:absolute; inset:0; background:var(--paper); color:var(--p-ink); display:flex; flex-direction:column; padding:13px 13px 11px;
+  -webkit-mask:radial-gradient(circle, #0000 3.2px, #000 3.7px) -5px -5px/10px 10px repeat, linear-gradient(#000 0 0) center/calc(100% - 10px) calc(100% - 10px) no-repeat;
+  mask:radial-gradient(circle, #0000 3.2px, #000 3.7px) -5px -5px/10px 10px repeat, linear-gradient(#000 0 0) center/calc(100% - 10px) calc(100% - 10px) no-repeat}
+.si{position:relative; flex:1; min-height:0; background:var(--ink); -webkit-mask:var(--m) center/cover no-repeat; mask:var(--m) center/cover no-repeat}
+.sph{position:relative; flex:1; min-height:0; background-size:cover; background-position:center}
+.s-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px}
+.s-name{font:650 15px/1.1 var(--f-ui); letter-spacing:-.02em; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden}
+.s-no{font:400 13px/1 var(--f-px); color:var(--ink); flex:none}
+.s-bot{display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px}
+.s-city{font:600 8px/1.2 var(--f-ui); letter-spacing:.14em; text-transform:uppercase}
+.s-val{font:700 19px/.9 var(--f-ui); letter-spacing:-.03em; color:var(--ink)}
+.s-val small{font-size:10px; font-weight:600; margin-left:2px; letter-spacing:0}
+.s-when{position:absolute; left:8px; top:8px; font:600 10.5px/1 var(--f-ui); background:var(--ink); color:#fff; padding:5px 7px; border-radius:3px}
+/* postmark: a collected place gets cancelled */
+.pmk{position:absolute; color:rgba(22,21,20,.78); mix-blend-mode:multiply; pointer-events:none; transform:rotate(-14deg); z-index:3}
+.pmk text{font-family:"Geist Pixel","Geist",sans-serif}
+.card .pmk{right:-6px; top:46px; width:118px}
+.pmk.thunk{animation:thunk .5s cubic-bezier(.2,1.6,.4,1) backwards}
+@keyframes thunk{from{transform:rotate(-30deg) scale(2.4); opacity:0}}
+
+/* home */
+.v-home{cursor:pointer}
+.sbar{position:absolute; left:18px; right:18px; top:14px; display:flex; justify-content:space-between; align-items:center; font:400 12px/1 var(--f-px); color:var(--s-dim)}
+.prog{display:flex; align-items:center; gap:6px; color:var(--s-fg)}
+.prog i{width:7px; height:7px; border-radius:50%; background:var(--s-fg)}
+.bat{display:flex; align-items:center; gap:6px}
+.bat i{width:18px; height:9px; border:1.5px solid currentColor; border-radius:3px; position:relative; box-sizing:border-box}
+.bat i::after{content:""; position:absolute; left:1.5px; top:1.5px; bottom:1.5px; width:68%; background:currentColor; border-radius:1px}
+.clock{position:absolute; left:0; right:0; top:36px; text-align:center; font:400 56px/1 var(--f-px); letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.hline{position:absolute; left:20px; right:20px; top:214px; text-align:center; font-size:14px; line-height:1.35; color:var(--s-fg); text-wrap:balance; transition:opacity .4s}
+.hdots{position:absolute; left:0; right:0; bottom:18px; display:flex; justify-content:center; gap:6px}
+.hdots i{width:7px; height:7px; border-radius:50%; background:var(--s-dot)}
+.hdots i.f{background:var(--s-fg)}
+.zz{position:absolute; font:400 14px var(--f-px); color:var(--s-dim); pointer-events:none; z-index:21; animation:zz 2.4s ease-out forwards}
+@keyframes zz{from{opacity:0; transform:translate(0,0) scale(.6)} 30%{opacity:1} to{opacity:0; transform:translate(16px,-34px) scale(1.1)}}
+
+/* menu: four coloured stamps, Japan-series style */
+.mtop{display:flex; align-items:center; justify-content:space-between; padding:12px 14px 0; height:40px; flex:none}
+.mtime{font:400 15px var(--f-px); padding-left:4px}
+.mgrid{flex:1; display:grid; grid-template-columns:130px 130px; grid-template-rows:100px 100px; gap:10px 8px; padding:12px 14px 16px; min-height:0; align-content:end; justify-content:center}
+.mcard{transition:transform .45s var(--spring)}
+.mcard .sp{background:var(--ink); color:#fff; padding:12px 12px 10px}
+.mcard .si{position:absolute; inset:8px; background:rgba(0,0,0,.3); flex:none}
+.mcard .sph{position:absolute; inset:7px; flex:none}
+.mcard .sph::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.35), transparent 50%, rgba(0,0,0,.45))}
+.mcard .lb{position:relative; z-index:2; font:700 17px/1 var(--f-ui); letter-spacing:-.03em}
+.mcard .ct{position:absolute; z-index:2; right:12px; bottom:10px; font:400 13px/1 var(--f-px)}
+.mcard.dk .sp{color:#151413}
+.mcard.on{transform:translateY(-3px) scale(1.04)}
+.mcard.on .sp{box-shadow:inset 0 0 0 2.5px currentColor}
+.mcard.on::after{content:""; position:absolute; left:50%; bottom:-7px; width:18px; height:3px; margin-left:-9px; border-radius:2px; background:var(--s-fg)}
+
+/* carousel of place stamps */
+.car{position:relative; flex:1; perspective:800px; touch-action:pan-y; cursor:grab}
+.card{position:absolute; left:50%; top:4px; width:180px; height:200px; margin-left:-90px;
+  transition:transform .65s cubic-bezier(.22,1.25,.36,1), opacity .45s; will-change:transform}
+.car.drag .card{transition:none}
+.dots{display:flex; justify-content:center; gap:6px; padding:6px 0 18px; flex:none}
+.dots i{width:8px; height:8px; border-radius:4px; background:var(--s-dot); transition:width .5s var(--spring), background .3s; cursor:pointer; position:relative}
+.dots i::before{content:""; position:absolute; inset:-8px -3px}
+.dots i.f{background:var(--s-dim)}
+.dots i.on{width:24px; background:var(--s-fg)}
+
+/* place */
+.hero{margin:14px 13px 0; height:140px; flex:none; transform-origin:0 0}
+.hero .sp{padding:10px 10px 9px}
+.hero .s-bot{margin-top:6px}
+.v-place .bk{position:absolute; top:22px; background:var(--glass); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+.v-place .bk.l{left:22px} .v-place .bk.r{right:22px}
+.pn{font:400 21px/1.1 var(--f-px); padding:12px 16px 0; text-wrap:balance; flex:none}
+.meta{display:flex; align-items:center; gap:5px; padding:0 16px; margin-top:7px; font-size:13px; color:var(--s-dim); white-space:nowrap; overflow:hidden}
+.meta svg{width:14px; height:14px; flex:none; color:var(--s-fg)}
+.meta b{color:var(--s-fg); font-weight:600}
+.nudge{margin:8px 16px 0; font-size:12.5px; color:var(--s-dim)}
+.vo .bars{display:none; gap:2px; align-items:center; height:16px}
+.vo .bars i{width:3px; border-radius:2px; background:currentColor; animation:eq .8s ease-in-out infinite alternate}
+.vo .bars i:nth-child(2){animation-delay:-.3s} .vo .bars i:nth-child(3){animation-delay:-.55s}
+@keyframes eq{from{height:4px} to{height:15px}}
+.vo.on{background:var(--s-fg); color:var(--s-on)}
+.vo.on svg{display:none} .vo.on .bars{display:flex}
+.btn.ghost{background:var(--s-tile); color:var(--s-fg)}
+
+/* quirk */
+.bub{margin:12px 14px 0; background:var(--s-fg); color:var(--s-on); border-radius:22px 22px 22px 6px; padding:15px 16px 17px; font:550 16.5px/1.34 var(--f-ui); letter-spacing:-.01em; transform-origin:12% 120%; animation:bub .7s var(--spring) .2s backwards; position:relative; min-height:112px}
+.bub::after{content:""; position:absolute; left:24px; bottom:-10px; width:18px; height:18px; background:var(--s-fg); clip-path:polygon(0 0,100% 0,0 100%)}
+@keyframes bub{from{transform:scale(.2) rotate(-8deg); opacity:0}}
+.caret{display:inline-block; width:2px; height:1em; background:currentColor; vertical-align:-2px; animation:blink .7s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.v-quirk .acts{padding-left:112px}
+
+/* finder: always a dark viewfinder */
+.v-finder{background:#0B0C0E; color:#F5F4F0}
+.vf{position:absolute; inset:0; background:radial-gradient(90% 70% at 50% 45%, #2b2e33, #0b0c0e)}
+.vf canvas{position:absolute; inset:0; width:100%; height:100%; opacity:.55}
+.br{position:absolute; width:26px; height:26px; border-color:#F5F4F0; border-style:solid; border-width:0; animation:brk .7s var(--spring) backwards .1s}
+.br.a{left:26px; top:64px; border-top-width:3px; border-left-width:3px; border-top-left-radius:10px; --dx:-14px; --dy:-14px}
+.br.b{right:26px; top:64px; border-top-width:3px; border-right-width:3px; border-top-right-radius:10px; --dx:14px; --dy:-14px}
+.br.c{left:26px; bottom:100px; border-bottom-width:3px; border-left-width:3px; border-bottom-left-radius:10px; --dx:-14px; --dy:14px}
+.br.d{right:26px; bottom:100px; border-bottom-width:3px; border-right-width:3px; border-bottom-right-radius:10px; --dx:14px; --dy:14px}
+@keyframes brk{from{transform:translate(var(--dx),var(--dy)); opacity:0}}
+.ret{position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border:2px solid rgba(255,255,255,.75); border-radius:50%; animation:breathe 2.2s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.15); opacity:.55}}
+.vtag{position:absolute; left:50%; top:calc(50% - 62px); transform:translateX(-50%); background:#F5F4F0; color:#111114; font:400 13px/1 var(--f-px); padding:8px 12px; border-radius:20px; white-space:nowrap; box-shadow:0 6px 14px rgba(0,0,0,.45); animation:tagin .8s var(--spring) .3s backwards}
+.vtag::after{content:""; position:absolute; left:50%; bottom:-5px; width:10px; height:10px; margin-left:-5px; background:#F5F4F0; transform:rotate(45deg)}
+@keyframes tagin{from{transform:translateX(-50%) translateY(14px) scale(.5); opacity:0}}
+.v-finder .bk{position:absolute; left:14px; top:14px; background:rgba(255,255,255,.14); color:#F5F4F0}
+.skip{position:absolute; right:14px; top:14px; height:40px; padding:0 14px; border-radius:20px; background:rgba(255,255,255,.14); display:flex; align-items:center; font:400 13px var(--f-px)}
+.shut{position:absolute; left:50%; bottom:18px; width:66px; height:66px; margin-left:-33px; border-radius:50%; border:3.5px solid #F5F4F0; box-sizing:border-box; display:grid; place-items:center}
+.shut::after{content:""; width:50px; height:50px; border-radius:50%; background:#F5F4F0; transition:transform .3s var(--spring)}
+.shut:active::after{transform:scale(.8)}
+.v-finder .on{box-shadow:0 0 0 3px rgba(255,255,255,.55)}
+.iris{position:absolute; left:50%; top:50%; width:460px; height:460px; border-radius:50%; transform:translate(-50%,-50%); box-shadow:0 0 0 400px #000; pointer-events:none; z-index:30}
+
+/* saved + memory: the photo-stamp up top, the story plays like synced lyrics */
+.lybg{position:absolute; inset:-40px; z-index:-1; background-size:cover; background-position:center; filter:var(--lybg); animation:fadein 1.2s ease .6s backwards}
+.lybg .si{position:absolute; inset:0; background:var(--ink)}
+@keyframes fadein{from{opacity:0}}
+.shead{display:flex; align-items:center; gap:13px; padding:14px 14px 2px 16px; flex:none; position:relative; z-index:8}
+.pt{width:50px; height:60px; flex:none; transform:rotate(-4deg)}
+.pt .stamp{height:100%}
+.pt .sp{padding:6px}
+.pt .pmk{width:62px; left:16px; top:-10px}
+.pt .add{display:grid; place-items:center; color:var(--p-ink); opacity:.5} .pt .add svg{width:16px; height:16px}
+.sh-t{flex:1; min-width:0}
+.sh-t .tg{font:400 15px/1.1 var(--f-px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.sh-t .sub{font:500 12px/1.2 var(--f-ui); color:var(--s-dim); margin-top:5px}
+.ly{position:relative; flex:1; min-height:0; overflow:hidden; -webkit-mask-image:linear-gradient(transparent, #000 16%, #000 72%, transparent); mask-image:linear-gradient(transparent, #000 16%, #000 72%, transparent)}
+.lyin{position:absolute; left:18px; right:18px; top:0; transition:transform .8s var(--glide)}
+.lyin p{margin:0 0 12px; font-family:"Geist",ui-sans-serif,sans-serif; font-weight:600; font-size:19px; line-height:1.26; letter-spacing:-.018em; color:var(--ly-off); transition:color .5s, transform .5s var(--spring); transform-origin:0 50%; cursor:pointer}
+.lyin p.past{color:var(--ly-past)}
+.lyin p.on{color:var(--ly-on); transform:scale(1.03)}
+.lyin p b{font-weight:700}
+.v-saved .acts,.v-memory .acts{padding-left:84px; position:relative; z-index:3}
+.mini{width:26px; height:26px; border-radius:50%; overflow:hidden; flex:none; background:var(--paper)}
+.mini .si{width:100%; height:100%}
+.paw{position:absolute; width:18px; height:18px; pointer-events:none; z-index:25}
+
+/* notebook: real photos as stamps */
+.nb{flex:1; overflow-y:auto; scrollbar-width:none; padding:12px 16px 20px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px 12px; align-content:start}
+.nb::-webkit-scrollbar{display:none}
+.pm{display:flex; flex-direction:column; gap:6px; min-width:0}
+.pm .stamp{height:90px; transform:rotate(var(--r))}
+.pm .sp{padding:6px}
+.pm .pmk{width:70px; right:-10px; top:-6px}
+.pm .add{display:grid; place-items:center; gap:2px; text-align:center; font:600 9.5px/1.1 var(--f-ui); color:var(--p-ink)}
+.pm .add svg{width:16px; height:16px; opacity:.6}
+.pm .c{font:500 10.5px/1.15 var(--f-ui); color:var(--s-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center}
+.pm.ghost .stamp{filter:none}
+.pm.ghost .hole{height:90px; box-sizing:border-box; border:1.5px dashed var(--s-dot); border-radius:4px; display:grid; place-items:center; font:400 13px var(--f-px); color:var(--s-dim)}
+.pm.on .stamp,.pm.on .hole{outline:2.5px solid var(--s-fg); outline-offset:4px}
+.share{margin-left:auto}
+
+/* boot */
+.boot{flex:1; display:grid; place-items:center}
+.logo{font:400 46px var(--f-px); color:var(--s-fg)}
+
+/* kesar: the only red thing on screen */
+.kc{position:absolute; left:0; top:0; width:80px; height:80px; z-index:20; cursor:pointer; transform:translate(108px,400px); filter:drop-shadow(0 5px 6px var(--shadow))}
+.kc svg,#kco svg{width:100%; height:100%; overflow:visible}
+.kc .head,#kco .head{animation:float 3.4s ease-in-out infinite; transform-origin:50% 80%}
+@keyframes float{50%{transform:translateY(1.5px) rotate(.8deg)}}
+.eye{transform-box:fill-box; transform-origin:center; animation:bl 4.8s infinite}
+@keyframes bl{0%,94%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.1)}}
+.ear-r{transform-box:fill-box; transform-origin:0% 100%; animation:tw 7s infinite}
+@keyframes tw{0%,88%,100%{transform:rotate(0)}91%{transform:rotate(-10deg)}94%{transform:rotate(4deg)}}
+.pup{transform:translate(var(--lx,0px),0); transition:transform .5s var(--glide)}
+.eyes-h,.eyes-s{display:none}
+.happy .eyes,.sleep .eyes{display:none} .happy .eyes-h{display:inline} .sleep .eyes-s{display:inline}
+.happy svg{animation:hop .45s var(--spring) 2}
+@keyframes hop{50%{transform:translateY(-9px) rotate(-5deg)}}
+.talk .head{animation:talkb .32s ease-in-out infinite alternate}
+@keyframes talkb{to{transform:translateY(-1.5px) rotate(-2deg)}}
+.sleep .head{animation:breath 3s ease-in-out infinite}
+@keyframes breath{50%{transform:translateY(2px) scaleY(.97)}}
+.say{position:absolute; z-index:21; max-width:170px; background:var(--s-fg); color:var(--s-on); font:550 13px/1.32 var(--f-ui); padding:9px 12px; border-radius:16px; pointer-events:none; animation:bub .55s var(--spring); box-shadow:0 8px 18px var(--shadow)}
+.say.out{animation:sayout .3s ease-in forwards}
+@keyframes sayout{to{transform:scale(.6); opacity:0}}
+.puff{position:absolute; width:9px; height:9px; border-radius:50%; background:var(--s-dim); pointer-events:none; z-index:19}
+.toast{position:absolute; left:16px; right:16px; bottom:16px; z-index:35; background:var(--s-fg); color:var(--s-on); font-weight:600; font-size:13px; padding:10px 12px; border-radius:16px; text-align:center; animation:pop .4s var(--spring)}
+
+/* ---------- printed card ---------- */
+.manual{display:flex; flex-direction:column; gap:22px; min-width:0}
+.manual h1{font:400 58px/.95 var(--f-px); letter-spacing:-.02em; margin:0 0 14px}
+.manual h1 span{color:var(--accent)}
+.lede{margin:0; max-width:32ch; font-size:16px; line-height:1.45}
+.ctl{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:9px 12px; align-items:center; font-size:14.5px}
+.ctl .n{font:400 12px var(--f-px); letter-spacing:.04em}
+.ctl .d{color:var(--muted)}
+kbd{font:400 12px var(--f-px); padding:2px 7px; border:1px solid var(--hair); border-bottom-width:2px; border-radius:6px; background:var(--chip); white-space:nowrap}
+.opts{display:flex; flex-direction:column; gap:12px}
+.shells{display:flex; gap:12px; align-items:center}
+.sw{all:unset; width:32px; height:32px; border-radius:50%; cursor:pointer; transition:transform .35s var(--spring); box-shadow:inset 0 2px 2px rgba(255,255,255,.5), inset 0 -3px 4px rgba(0,0,0,.18), 0 2px 4px rgba(0,0,0,.18)}
+.sw:hover{transform:scale(1.12)} .sw:active{transform:scale(.9)}
+.sw.on{outline:2px solid var(--ink); outline-offset:3px}
+.seg{display:inline-flex; padding:3px; border-radius:999px; box-shadow:inset 0 0 0 1px var(--hair); align-self:flex-start}
+.seg button{all:unset; cursor:pointer; padding:6px 13px; border-radius:999px; font-size:13px; font-weight:550; color:var(--muted)}
+.seg button.on{background:var(--ink); color:var(--ground-2)}
+.sw:focus-visible,.linkbtn:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.fine{font-size:13px; color:var(--muted); margin:0; max-width:36ch}
+.linkbtn{all:unset; cursor:pointer; font-size:13px; font-weight:550; color:var(--muted); border-bottom:1px solid var(--hair)}
+.linkbtn.armed{color:var(--accent); border-color:var(--accent)}
+details.cred{font-size:12px; color:var(--muted); max-width:36ch}
+details.cred summary{cursor:pointer; font-weight:550}
+details.cred ul{margin:8px 0 0; padding-left:16px; display:grid; gap:3px}
+details.cred a{color:inherit}
+
+.modal{position:fixed; inset:0; z-index:50; background:rgba(16,16,20,.55); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:20px max(16px, env(safe-area-inset-right,0px)) 20px max(16px, env(safe-area-inset-left,0px))}
+.sheet{background:var(--ground-2); color:var(--ink); border-radius:24px; padding:18px; width:min(400px,100%); max-height:100%; overflow:auto; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; box-shadow:0 30px 80px -20px rgba(0,0,0,.5); animation:pop .6s var(--spring)}
+.sheet img{width:100%; border-radius:14px; display:block; aspect-ratio:4/5; background:var(--ground)}
+.capt{margin:0; font-size:14px; padding:10px 12px; border:1px solid var(--hair); border-radius:12px; user-select:all; -webkit-user-select:all}
+.mrow2{display:flex; gap:8px}
+.mb{all:unset; cursor:pointer; flex:1; text-align:center; padding:12px 0; border-radius:999px; font-weight:600; font-size:15px; background:var(--ink); color:var(--ground-2); transition:transform .3s var(--spring)}
+.mb:active{transform:scale(.95)}
+.mb.ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1px var(--hair)}
+.mb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; animation-delay:0s!important; transition-duration:.01ms!important} }
+</style>
+
+<div class="page">
+  <div class="stage" id="stage">
+    <div class="stage-box">
+      <div class="dwrap">
+        <div class="floor"></div>
+        <div class="device" id="device" data-shell="stone">
+          <div class="peek"><div id="kco" aria-label="Kesar peeking"></div></div>
+          <div class="grip"></div>
+          <div class="bezel">
+            <div class="screen" id="screen">
+              <div id="views"></div>
+              <div class="kc" id="kc" aria-label="Kesar the cat"></div>
+              <div class="toast" id="toast" hidden></div>
+            </div>
+          </div>
+          <div class="lens" id="lens"></div>
+          <div class="pocket" id="pocket" role="slider" aria-label="Scroll wheel"><div class="roller"></div></div>
+          <button class="ok" id="ok" tabindex="-1" aria-label="OK"></button>
+          <button class="back" id="back" tabindex="-1" aria-label="Back"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="manual">
+    <div>
+      <h1>Meet <span>Kesar.</span></h1>
+      <p class="lede">A pocket guide with a stray cat inside. Go somewhere, and Kesar shows you the one odd detail that makes the place make sense. Snap it and it gets postmarked into your book.</p>
+    </div>
+    <div class="ctl">
+      <span class="n">ROLL</span><span class="d">Scroll</span><span><kbd>↑</kbd> <kbd>↓</kbd></span>
+      <span class="n">OK</span><span class="d">Open, go, snap</span><span><kbd>space</kbd></span>
+      <span class="n">BACK</span><span class="d">Back</span><span><kbd>esc</kbd></span>
+    </div>
+    <div class="opts">
+      <div class="shells">
+        <button class="sw" data-shell="stone" style="background:#ECEAE4" aria-label="Stone shell"></button>
+        <button class="sw" data-shell="sage" style="background:#A6B795" aria-label="Sage shell"></button>
+        <button class="sw" data-shell="ink" style="background:#2C2C31" aria-label="Ink shell"></button>
+      </div>
+      <div class="seg" id="mode" role="group" aria-label="Screen">
+        <button data-mode="auto">Auto</button><button data-mode="dark">Dark</button><button data-mode="light">Light</button>
+      </div>
+    </div>
+    <p class="fine">Prototype for Ahmedabad. Distances are measured from <span id="youAt">Navrangpura</span> for now. "On now" is sample data.</p>
+    <details class="cred"><summary>Photo credits</summary><ul id="cred"></ul></details>
+    <div><button class="linkbtn" id="reset">Clear notebook</button></div>
+  </aside>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-label="Share your stamp sheet">
+    <img id="card" alt="Your Ahmedabad stamp sheet">
+    <p class="capt" id="capt"></p>
+    <div class="mrow2"><button class="mb" id="copyCap">Copy caption</button><button class="mb ghost" id="closeM">Close</button></div>
+  </div>
+</div>
+<input type="file" id="photo" accept="image/*" capture="environment" hidden>
+
+<script>
+/* ================= CONTENT: Ahmedabad ================= */
+const LISTS={
+ explore:{label:'Explore',ink:'blue',img:'jhulta',items:[
+  {id:'gufa',name:'Amdavad ni Gufa',area:'University Area',ll:[23.0376,72.5497],what:'An underground gallery that pokes out of the lawn as a cluster of cave domes.',
+   tag:'Broken china dome',prompt:'Look closely at the domes. They are covered in pieces of broken cups and plates. Find a shard that still has its pattern.',
+   story:'Architect <b>B. V. Doshi</b> built Gufa with the painter <b>M. F. Husain</b>. The domes are coated in a mosaic of broken china that throws back the sun, and inside there is hardly a straight line. It was meant to feel dug, not built.',
+   again:{tag:'Noon glitter',prompt:'Come back when the sun is high. Snap the domes while the china is glittering.',story:'Same domes, different light. <b>The broken china only really glitters</b> when the sun is overhead, so the building changes through the day.'}},
+  {id:'jali',name:'Sidi Saiyyed ni Jali',area:'Lal Darwaza',ll:[23.0270,72.5809],what:'A small 16th-century mosque, famous for one stone window.',
+   tag:'Stone tree',prompt:'Find the window where stone turns into a tree. Snap the branches where they twist into each other.',
+   story:'The <b>jali</b> is carved from stone into intertwined trees and palm fronds, and light comes through it like through leaves. It became the city\'s unofficial emblem, and <b>IIM Ahmedabad\'s logo</b> is based on it.'},
+  {id:'pol',name:'A chabutro in the pols',short:'Pol chabutro',area:'Old City',ll:[23.0225,72.5895],what:'Old gated neighbourhoods of carved wooden houses, each with a secret in its courtyard.',
+   tag:'Bird feeder tower',prompt:'Walk into a pol and find its chabutro, a tall carved pole-house in the open. Wait for a bird to land on it.',
+   story:'A <b>chabutro</b> is a bird-feeding tower. Feeding birds is a daily ritual in the pols, and families still top them up. These neighbourhoods are a big reason Ahmedabad became <b>India\'s first UNESCO World Heritage City</b> in 2017.',
+   again:{tag:'First birds',prompt:'Come back at first light, when families top up the chabutro. Snap the first birds arriving.',story:'Mornings are when the <b>feeding ritual</b> happens, so the chabutro is at its busiest just after sunrise.'}},
+  {id:'jhulta',name:'Jhulta Minar',area:'Kalupur',ll:[23.0219,72.5996],what:'Two slender minarets near the railway station.',
+   tag:'The shaking pair',prompt:'Stand where you can see both minarets at once. Snap the gap between them.',
+   story:'These are the <b>Shaking Minarets</b>. The story goes that if you shake one, the other trembles a few seconds later. How the vibration travels between them is still debated.'},
+  {id:'adalaj',name:'Adalaj ni Vav',area:'Adalaj',ll:[23.1667,72.5806],what:'A stepwell on the city\'s edge that drops five storeys into cool stone.',
+   tag:'Pot of life',prompt:'Walk all the way down. Find a carving of a water pot with a tree growing out of it.',
+   story:'Adalaj was finished in <b>1499</b>. Travellers came down here to rest where the air stays cooler than the street. The pot-and-tree carving is the <b>Ami Khumbor</b>, a symbol of the water of life.'},
+  {id:'ashram',name:'Sabarmati Ashram',area:'Ashram Road',ll:[23.0607,72.5809],what:'Gandhi\'s home by the river, kept almost as he left it.',
+   tag:'The spinning wheel',prompt:'Find Hriday Kunj, Gandhi\'s cottage. Snap the charkha, his spinning wheel.',
+   story:'Gandhi lived here from <b>1917 to 1930</b>. Spinning your own thread was a protest against imported cloth. The <b>Dandi March</b> to break the salt law set out from this ashram in March 1930.'},
+  {id:'teen',name:'Teen Darwaza',area:'Bhadra',ll:[23.0243,72.5847],what:'A triple-arched gateway buried in street stalls.',
+   tag:'The 1812 promise',prompt:'Look at the pillars of the gate. Find the old carved inscription among the stalls.',
+   story:'The inscription records an order from <b>1812</b> that daughters must get their share of their father\'s property. It was carved into a public gate so nobody could claim they hadn\'t heard.',
+   again:{tag:'Gate after dark',prompt:'Come back after dark. Snap the arches with the stalls lit up underneath.',story:'At night the market under the arches lights up, and <b>the gate turns into a roof</b> for the stalls.'}},
+  {id:'kankaria',name:'Kankaria Lake',area:'Maninagar',ll:[23.0063,72.6010],what:'A huge old lake with a garden island in the middle.',
+   tag:'Not a circle',prompt:'Walk a bit of the edge and look at the corners. Snap one: this lake is not round.',
+   story:'Kankaria was built in <b>1451</b> and has <b>34 sides</b>. The island garden in the middle, <b>Nagina Wadi</b>, was a royal retreat.',
+   again:{tag:'Evening edge',prompt:'Come back in the evening. Snap a corner of the edge once the lights are on.',story:'In the evening the lakefront fills with families, and <b>the corners of the edge</b> are easiest to spot once it is lit.'}}]},
+ eat:{label:'Eat',ink:'red',img:'agashiye',items:[
+  {id:'manek',name:'Manek Chowk',area:'Old City',ll:[23.0240,72.5880],what:'A square that changes jobs every night.',
+   tag:'Shop by day',prompt:'Come after 9 PM. Snap a jewellery shop shutter with a food stall set up in front of it.',
+   story:'By day it trades in <b>gold and vegetables</b>. At night the same square fills with pav bhaji, sandwiches and kulfi stalls until late. Same ground, second life.'},
+  {id:'chandra',name:'Chandravilas',area:'Gandhi Road',ll:[23.0254,72.5864],what:'An old restaurant known for the city\'s favourite breakfast.',
+   tag:'Fafda + sambharo',prompt:'Order fafda-jalebi. Snap the fafda with the papaya sambharo and fried chillies beside it.',
+   story:'Fafda is crisp and salty, jalebi is hot and sweet, and the raw papaya cuts through both. On <b>Dussehra morning</b> people queue across the city for it.'},
+  {id:'agashiye',name:'Agashiye',area:'Lal Darwaza',ll:[23.0262,72.5800],what:'A rooftop terrace serving a set Gujarati thali.',
+   tag:'Count the bowls',prompt:'Before anyone refills it, count the bowls on your thali. Snap the full plate.',
+   story:'<b>Agashiye</b> means terrace. A Gujarati thali balances sweet, sour, salty and spicy on one plate, and the menu here changes daily.'},
+  {id:'lawg',name:'Law Garden market',short:'Law Garden',area:'Ellisbridge',ll:[23.0256,72.5590],what:'An evening street market of embroidery and mirror work.',
+   tag:'Mirror work',prompt:'Find cloth stitched with tiny round mirrors. Snap one catching the light.',
+   story:'Mirror work, or <b>abhla bharat</b>, comes from Kutch and Saurashtra. The mirrors were once mica, cut and stitched in place by hand.'}]},
+ now:{label:'On now',ink:'mus',img:'kites',items:[
+  {id:'walk',name:'Heritage walk',area:'Kalupur',ll:[23.0290,72.5960],when:'Daily 8 AM',what:'A morning walk through the pols, from the Swaminarayan temple in Kalupur.',
+   tag:'Hidden lane',prompt:'Ask the guide about the secret lanes between pols. Snap one you would never have found alone.',
+   story:'Pols were built with <b>hidden passages</b> so neighbours could move between them, or slip away, without using the main street.'},
+  {id:'kites',name:'Kite makers at Patang Bazaar',short:'Patang Bazaar',area:'Dhalgarwad',ll:[23.0248,72.5850],when:'This week',what:'Workshops where kites are cut, glued and stacked for Uttarayan.',
+   tag:'Bamboo spine',prompt:'Snap a kite maker fixing the thin bamboo spine to the paper.',
+   story:'In the weeks before <b>Uttarayan on 14 January</b>, the kite market stays busy late into the night. Then the whole city goes up on its roofs to fly.'},
+  {id:'atal',name:'Sunset on Atal Bridge',short:'Atal Bridge',area:'Riverfront',ll:[23.0286,72.5732],when:'Today 6 PM',what:'A walking bridge over the Sabarmati with a colourful roof.',
+   tag:'Kite roof',prompt:'Stand under the roof and look up. Snap the part that looks like kite fabric.',
+   story:'<b>Atal Bridge</b> opened in 2022 for people on foot only. Its roof takes its colours from the kites of Uttarayan.'}]}
+};
+const ORDER=['explore','eat','now'];
+const ALL=ORDER.flatMap(k=>LISTS[k].items.map(p=>({...p,list:k})));
+const byId=id=>ALL.find(p=>p.id===id);
+const INKS=['blue','red','mus','green'];
+const inkOf=p=>`var(--i-${INKS[ALL.findIndex(x=>x.id===p.id)%4]})`;
+const NO=p=>String(ALL.findIndex(x=>x.id===p.id)+1).padStart(2,'0');
+const SHORT=p=>p.short||p.name;
+const CRED={"gufa":["Shailya Dalal","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Amdavad_ni_Gufa,_Ahmedabad.JPG"],"jali":["Bernard Gagnon","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Jali_at_Sidi_Saiyyed_Mosque_02.jpg"],"pol":["Kondicherry","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Chabootaro.JPG"],"jhulta":["Anupamg","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Jhulta_Minar_01.jpg"],"adalaj":["Tejal Acharya","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File:Adalaj_Vav_01.jpg"],"ashram":["Nizil Shah","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Hriday_Kunj_at_Sabarmati_Ashram.jpg"],"teen":["Saket K. Lakhia","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Teen_Darwaza_Ahmedabad_Gujarat_001.jpg"],"kankaria":["Abhiman Singh","Public domain","https://commons.wikimedia.org/wiki/File:Kankaria_Lake,_Ahmedabad_2015.jpg"],"manek":["Pravega","CC0","https://commons.wikimedia.org/wiki/File:Manek_Chowk_(Ahmedabad)_01.jpg"],"chandra":["Jit.roy.chowdhury","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Fafra_-_jalebi.JPG"],"agashiye":["Amol Sinha","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Gujarati_Thali_1.jpg"],"lawg":["Unknown author (Kutch embroidery)","CC0","https://commons.wikimedia.org/wiki/File:Embroidered_hanging,_Kutch_(western_India.jpg"],"walk":["Riyas16","CC0","https://commons.wikimedia.org/wiki/File:Desai_ni_Pol_Ahmedabad_(57).jpg"],"kites":["Meena Kadri","CC BY 2.0","https://commons.wikimedia.org/wiki/File:Kite_Runner_at_the_Uttarayana_Kite_Festival_Ahmedabad.jpg"],"atal":["Rahilarious","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File:Foot_bridge_at_Ahmedabad_Sabarmati_Riverfront.jpg"]};
+
+/* where "you" are: a sample spot until GPS is switched on */
+let YOU={ll:[23.0365,72.5611],name:'Navrangpura',real:false};
+function km(p){ const R=6371, r=x=>x*Math.PI/180, [a1,o1]=YOU.ll, [a2,o2]=p.ll, da=r(a2-a1), dn=r(o2-o1);
+  const h=Math.sin(da/2)**2+Math.cos(r(a1))*Math.cos(r(a2))*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)) }
+const distV=p=>{ const d=km(p); return d<1? [Math.round(d*10)*100,'m'] : [d.toFixed(1),'km'] };
+const dist=p=>distV(p).join(' ');
+try{ navigator.permissions&&navigator.permissions.query({name:'geolocation'}).then(s=>{ if(s.state==='granted') navigator.geolocation.getCurrentPosition(pos=>{ YOU={ll:[pos.coords.latitude,pos.coords.longitude],name:'where you are',real:true}; document.getElementById('youAt').textContent='where you are' }) }).catch(()=>{}) }catch(e){}
+
+/* ================= STAMPS ================= */
+const engr=(id,ink)=>`<div class="si" style="--m:url(stamps/${id}.png);--ink:${ink}"></div>`;
+function postmark(date,again){ const d=new Date(date||Date.now()), M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return `<svg class="pmk" viewBox="0 0 150 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="40" cy="40" r="34"/><circle cx="40" cy="40" r="26" stroke-width="1.3"/>
+   ${[24,34,44,54].map(y=>`<path d="M80 ${y}q8 -5 16 0t16 0t16 0t16 0"/>`).join('')}</g>
+   <text x="40" y="38" text-anchor="middle" font-size="11" fill="currentColor">${String(d.getDate()).padStart(2,'0')} ${M[d.getMonth()]}</text>
+   <text x="40" y="51" text-anchor="middle" font-size="9" fill="currentColor">${again?'2ND LOOK':'GHUMO'}</text></svg>` }
+/* the place stamp: name, number, engraving, city, distance as the value */
+function placeStamp(p,{cls='',post=false,date=0,hero=false}={}){ const ink=inkOf(p), [v,u]=distV(p);
+  return `<div class="stamp ${cls}" style="--ink:${ink}"><div class="sp">
+   ${hero?'':`<div class="s-top"><div class="s-name">${SHORT(p)}</div><div class="s-no">${NO(p)}</div></div>`}
+   <div class="si" style="--m:url(stamps/${p.id}.png)">${''}</div>${p.when&&!hero?`<span class="s-when">${p.when}</span>`:''}
+   <div class="s-bot"><div class="s-city">Ahmedabad · 1411</div><div class="s-val">${v}<small>${u}</small></div></div>
+  </div>${post?postmark(date):''}</div>` }
+function photoStamp(m,{cls='',post=true}={}){ const p=byId(m.place);
+  return `<div class="stamp ${cls}" style="--ink:${inkOf(p)}"><div class="sp">${m.photo?`<div class="sph" style="background-image:url(${m.photo})"></div>`:`<div class="sph add">${ICO.cam}</div>`}</div>${post&&m.photo?postmark(m.date):''}</div>` }
+
+const ICO={
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+ down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+ arrow:'<svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+ pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+ dir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 002 2h10a2 2 0 002-2v-5"/></svg>',
+ cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+ eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ voice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a7.5 7.5 0 010 11"/></svg>'
+};
+const VOBTN=(cls='')=>`<div class="bk tap vo ${cls}" data-act="voice" aria-label="Listen">${ICO.voice}<span class="bars"><i></i><i></i><i></i></span></div>`;
+const PAW='<svg viewBox="0 0 20 20"><ellipse cx="10" cy="13" rx="5" ry="4.2" fill="currentColor"/><circle cx="4" cy="8" r="2.2" fill="currentColor"/><circle cx="8" cy="4.5" r="2.2" fill="currentColor"/><circle cx="12.5" cy="4.5" r="2.2" fill="currentColor"/><circle cx="16.2" cy="8" r="2.2" fill="currentColor"/></svg>';
+
+/* ================= STATE ================= */
+const KEY='ghumo-3-save';
+const fresh=()=>({mem:[],shell:'stone',sound:true,voice:false,mode:'auto',seen:0});
+let S; try{ S=Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)||'null')||{}) }catch(e){ S=fresh() }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){ toast('Storage is full, so this photo may not keep.') } }
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const memFor=id=>S.mem.find(m=>m.place===id);
+const memById=id=>S.mem.find(m=>m.id===id);
+const found=()=>S.mem.length;
+const nextPlace=from=>{ const i=from?ALL.findIndex(p=>p.id===from)+1:0; return ALL.slice(i).concat(ALL).find(p=>!memFor(p.id)) };
+const mapsLink=p=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.name+', '+p.area+', Ahmedabad');
+const bt=s=>{ let i=0; return s.split(' ').map(w=>`<span class="w">${[...w].map(c=>`<span class="ch" style="--i:${i++}">${c}</span>`).join('')}</span>`).join(' ') };
+const clockText=()=>{ const d=new Date(); return (d.getHours()%12||12)+':'+String(d.getMinutes()).padStart(2,'0') };
+const plain=h=>h.replace(/<[^>]+>/g,'');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* how long since the last visit, read once at start so Kesar can remember */
+const AWAY=S.seen? Date.now()-S.seen : 0; S.seen=Date.now(); save();
+setInterval(()=>{ S.seen=Date.now(); save() },60000);
+
+/* ================= SOUND + VOICE ================= */
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)() }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); return AC }
+function tone(f,d=.06,type='sine',v=.05,when=0,to){ if(!S.sound) return; const a=ac(); if(!a) return; const t=a.currentTime+when, o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+d); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+.03) }
+function noise(d=.08,v=.12){ if(!S.sound) return; const a=ac(); if(!a) return; const b=a.createBuffer(1,Math.floor(a.sampleRate*d),a.sampleRate), ch=b.getChannelData(0); for(let i=0;i<ch.length;i++) ch[i]=(Math.random()*2-1)*(1-i/ch.length); const s=a.createBufferSource(), g=a.createGain(); g.gain.value=v; s.buffer=b; s.connect(g).connect(a.destination); s.start() }
+const SFX={ tick:()=>tone(2100,.01,'square',.01), ok:()=>tone(760,.07,'sine',.06,0,1100), back:()=>tone(620,.07,'sine',.05,0,380), whoosh:()=>tone(240,.28,'sine',.03,0,900),
+  meow:()=>{ tone(640,.17,'triangle',.05,0,920); tone(920,.18,'triangle',.04,.15,540) }, shutter:()=>{ noise(.05,.2); setTimeout(()=>noise(.08,.12),80) },
+  saved:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.16,'sine',.05,i*.07)), pop:()=>tone(900,.06,'sine',.05,0,1500), nope:()=>tone(220,.09,'sine',.05),
+  thunk:()=>{ tone(140,.12,'sine',.12,0,60); noise(.04,.18) } };
+function buzz(p){ try{ navigator.vibrate&&navigator.vibrate(p) }catch(e){} }
+const TTS=window.speechSynthesis||null; let VTOK=0;
+function voiceOf(){ if(!TTS) return null; const vs=TTS.getVoices(); return vs.find(v=>/en[-_]IN/i.test(v.lang))||vs.find(v=>/en[-_]GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null }
+function say(text,done){ if(!TTS){ done&&setTimeout(done,Math.max(1600,text.length*60)); return } const tk=VTOK; const u=new SpeechSynthesisUtterance(text); const v=voiceOf(); if(v) u.voice=v; u.rate=1.02; u.pitch=1.12;
+  let fired=false; const fin=()=>{ if(fired||tk!==VTOK) return; fired=true; done&&done() };
+  u.onend=fin; u.onerror=()=>{ if(fired||tk!==VTOK) return; fired=true; setTimeout(()=>{ if(tk===VTOK) done&&done() }, Math.max(1600,text.length*60)) };
+  setTimeout(fin, text.length*95+2500); TTS.speak(u); catMood('talk') }
+function hush(){ VTOK++; if(TTS) TTS.cancel(); if(KC.el.classList.contains('talk')) catMood(null) }
+
+/* ================= KESAR ================= */
+const RED='#E5102F';
+const CAT=`<svg viewBox="0 0 100 100">
+ <g class="head">
+  <g fill="none" stroke="${RED}" stroke-width="3.4" stroke-linecap="round"><path d="M7.5 68.4L15 70"/><path d="M7 78.6L15.4 76.8"/><path d="M84.6 88L91.8 91.6"/><path d="M77.2 94.4L81.4 98.4"/></g>
+  <path class="ear-r" d="M64 47C71 36 80 22 86.5 13.5Q89.5 10 90.6 13.5C90 30 88 47 85.5 62L72 58Z" fill="${RED}" stroke="${RED}" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M28.6 43.6C33 30 40 12 43 4Q45 .5 47 3C48.5 14 49.5 30 50.5 42C56 42.5 62 44.5 66 47C76 50 84 54 85.5 62C88 70 85 78 80 82C73 88 66 91 58 91C50 91 42 88 36 85C30 82 24 78 21 74C17 70 17 64 18 58C19 52 23 47 28.6 43.6Z" fill="${RED}" stroke="${RED}" stroke-width="2.4" stroke-linejoin="round"/>
+  <g class="eyes">
+   <g class="eye"><ellipse cx="34" cy="63.5" rx="8.6" ry="9.6" transform="rotate(-10 34 63.5)" fill="#fff"/><path class="pup" d="M38 60.4L36.9 68.4" stroke="${RED}" stroke-width="3.6" stroke-linecap="round"/></g>
+   <g class="eye"><ellipse cx="65.5" cy="70" rx="10.4" ry="9.2" transform="rotate(-25 65.5 70)" fill="#fff"/><path class="pup" d="M63.4 65.8L61.8 74.6" stroke="${RED}" stroke-width="3.6" stroke-linecap="round"/></g>
+  </g>
+  <g class="eyes-h" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M27 66Q34 56 41 64"/><path d="M56 73Q64 61 74 68"/></g>
+  <g class="eyes-s" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M27 64Q34 69 41 63"/><path d="M56 71Q65 76 74 67"/></g>
+ </g></svg>`;
+const KC={el:$('#kc'), cur:null, hidden:true, token:0, next:0, busy:false};
+KC.el.innerHTML=CAT; $('#kco').innerHTML=CAT;
+const SPOTS={
+ home:[{p:'s',x:148,y:152,s:1.3,f:1,home:1},{p:'l',y:150,v:52},{p:'r',y:150,v:52},{p:'t',x:236,v:50}],
+ menu:[{p:'s',x:150,y:32,s:.46,f:1}],
+ list:[{p:'s',x:226,y:32,s:.5},{p:'t',x:250,v:44}],
+ place:[{p:'s',x:250,y:170,s:.46}],
+ quirk:[{p:'s',x:58,y:236,s:1,f:1}],
+ finder:[{p:'r',y:150,v:52},{p:'l',y:150,v:48}],
+ saved:[{p:'s',x:46,y:256,s:.72,f:1}],
+ memory:[{p:'s',x:46,y:256,s:.72,f:1}],
+ notebook:[{p:'r',y:210,v:46},{p:'l',y:200,v:42}],
+ boot:[]
+};
+const tf=p=>`translate(${p.cx-40}px,${p.cy-40}px) rotate(${p.r}deg) scale(${p.s*p.f},${p.s})`;
+function spot(sp){ const s=sp.s||1, f=sp.f||(Math.random()<.5?-1:1), v=sp.v||50;
+  switch(sp.p){
+   case 't': return {cx:sp.x,cy:v-40,r:180,s,f,k:'t',hid:{cx:sp.x,cy:-80,r:180,s,f}};
+   case 'l': return {cx:v-40,cy:sp.y,r:90,s,f,k:'l',hid:{cx:-80,cy:sp.y,r:90,s,f}};
+   case 'r': return {cx:296-v+40,cy:sp.y,r:-90,s,f,k:'r',hid:{cx:376,cy:sp.y,r:-90,s,f}};
+   default: return {cx:sp.x,cy:sp.y,r:0,s,f,k:'s',home:sp.home,hid:{cx:sp.x,cy:sp.y,r:0,s:.01,f}};
+  } }
+function mv(el,frames,o){ const a=el.animate(frames,{fill:'forwards',...o}); return a.finished.then(()=>{ el.style.transform=frames[frames.length-1].transform; a.cancel() }).catch(()=>{}) }
+async function catTo(sp){
+  const tk=++KC.token, n=spot(sp), c=KC.cur, el=KC.el; sayHide();
+  if(reduce){ el.style.transform=tf(n); KC.cur=n; KC.hidden=false; look(); return }
+  if(c && !KC.hidden && c.k==='s' && n.k==='s'){
+    n.f=Math.sign(n.cx-c.cx)||c.f;
+    const mid={cx:(c.cx+n.cx)/2, cy:Math.min(c.cy,n.cy)-30, r:n.f*-8, s:(c.s+n.s)/2, f:n.f};
+    await mv(el,[{transform:tf({...c,f:n.f})},{transform:tf(mid),offset:.5},{transform:tf(n)}],{duration:820,easing:'cubic-bezier(.65,0,.35,1)'});
+  } else {
+    if(c && !KC.hidden) await catHide(true);
+    if(tk!==KC.token) return;
+    el.style.transform=tf(n.hid);
+    if(n.k==='s') puff(n.cx,n.cy+36*n.s);
+    await mv(el,[{transform:tf(n.hid)},{transform:tf(n)}],{duration:n.k==='s'?600:720,easing:'cubic-bezier(.34,1.45,.64,1)'});
+  }
+  if(tk!==KC.token) return; KC.cur=n; KC.hidden=false; look();
+}
+async function catHide(keep){ if(!KC.cur||KC.hidden) return; const c=KC.cur; KC.hidden=true; sayHide(); if(!keep) KC.token++;
+  await mv(KC.el,[{transform:tf(c)},{transform:tf(c.hid)}],{duration:360,easing:'cubic-bezier(.55,0,.8,.3)'}) }
+function look(){ if(!KC.cur) return; const dx=(148-KC.cur.cx)/148*2.2*(KC.cur.f||1); KC.el.style.setProperty('--lx',dx.toFixed(1)+'px') }
+function puff(x,y){ for(let i=0;i<7;i++){ const p=document.createElement('div'); p.className='puff'; p.style.left=x+'px'; p.style.top=y+'px'; $('#screen').appendChild(p); const a=i/7*Math.PI*2;
+  p.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:.9},{transform:`translate(calc(-50% + ${Math.cos(a)*30}px), calc(-50% + ${Math.sin(a)*12}px)) scale(.2)`,opacity:0}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=()=>p.remove() } }
+let sayEl=null, sayT=0;
+function catSay(text,ms=3400){ sayHide(); const c=KC.cur; if(!c||KC.hidden) return; const d=document.createElement('div'); d.className='say'; d.textContent=text; $('#screen').appendChild(d);
+  const w=Math.min(170,d.offsetWidth), h=d.offsetHeight; let x=c.cx-w/2, y=c.cy-40*c.s-h-4;
+  if(c.k==='t') y=c.cy+40*c.s-34; if(c.k==='l'){ x=c.cx+36; y=c.cy-h/2 } if(c.k==='r'){ x=c.cx-36-w; y=c.cy-h/2 }
+  d.style.left=clamp(x,14,282-w)+'px'; d.style.top=clamp(y,14,282-h)+'px'; sayEl=d; clearTimeout(sayT); sayT=setTimeout(sayHide,ms) }
+function sayHide(){ if(sayEl){ const d=sayEl; sayEl=null; d.classList.add('out'); setTimeout(()=>d.remove(),300) } }
+function catMood(m,ms){ KC.el.classList.remove('happy','talk','sleep'); if(m) KC.el.classList.add(m); if(ms) setTimeout(()=>KC.el.classList.remove(m),ms) }
+function progLine(){ const c=found(); return c? `${c} of ${ALL.length} stamps. ${ALL.length-c} to go.` : `Your stamp book is empty. Let's fix that.` }
+let greeted=false;
+function catLine(){ const h=new Date().getHours(), n=nextPlace(), c=found(), last=S.mem[0];
+  /* Kesar remembers: a gap of a day or more gets a welcome back */
+  if(!greeted && AWAY>20*3600e3 && last){ greeted=true; const d=Math.round(AWAY/864e5); return `Welcome back. ${d<=1?'A day':d+' days'} since ${byId(last.place).tag.toLowerCase()}.` }
+  if(c===0) return "I'm Kesar. I know every rooftop in Ahmedabad. Tap and I'll show you.";
+  const nophoto=S.mem.find(m=>!m.photo); if(nophoto&&Math.random()<.35) return `${SHORT(byId(nophoto.place))} still needs a photo to get its postmark.`;
+  if(!n) return 'Every stamp collected. Even I\'m impressed.';
+  const o=[`${SHORT(n)} is ${dist(n)} away. I'll meet you there.`, progLine()];
+  if(h>=19||h<1) o.push('Manek Chowk is waking up. Hungry?'); if(h>=5&&h<10) o.push('The pols are best early.'); if(h>=11&&h<17) o.push('Hot out? Gufa is underground and cool.');
+  return pick(o) }
+async function cameo(){ KC.busy=true; await catHide(); const o=$('#kco'); SFX.pop();
+  await mv(o,[{transform:'translateY(84px)'},{transform:'translateY(8px)'}],{duration:700,easing:'cubic-bezier(.34,1.5,.64,1)'});
+  await new Promise(r=>setTimeout(r,2600));
+  await mv(o,[{transform:'translateY(8px)'},{transform:'translateY(84px)'}],{duration:400,easing:'cubic-bezier(.55,0,.8,.3)'});
+  KC.busy=false; wander() }
+function wander(){ const sp=SPOTS[V&&V.name]||[]; if(!sp.length) return; const c=KC.cur;
+  let target;
+  if(V.name==='home') target= (c&&c.home&&!KC.hidden)? pick(sp.slice(1)) : sp[0];
+  else { const opts=sp.filter(s=>{ const q=spot(s); return !c||KC.hidden||q.k!==c.k||Math.abs(q.cx-c.cx)>20||Math.abs(q.cy-c.cy)>20 }); target=pick(opts.length?opts:sp) }
+  catTo(target).then(()=>{ if(V.name==='home'){ const l=V.el.querySelector('.hline'); if(l){ l.style.opacity=0; setTimeout(()=>{ l.textContent=KC.cur&&KC.cur.home? catLine() : 'Kesar wandered off. Look around the edges.'; l.style.opacity=1 },350) } } }) }
+KC.el.addEventListener('click',e=>{ e.stopPropagation(); ac(); wake(); SFX.meow(); buzz(15); catMood('happy',900); KC.next=performance.now()+9000;
+  if(['quirk','boot','menu','saved','memory','place'].includes(V.name)) return;
+  if(V.name==='home'&&KC.cur&&KC.cur.home){ catSay(Math.random()<.5?progLine():catLine()); return }
+  setTimeout(()=>{ catHide().then(()=>setTimeout(wander,700)) },900) });
+$('#kco').addEventListener('click',()=>{ ac(); SFX.meow(); buzz(15) });
+let lastInput=performance.now(), zT=0;
+function wake(){ lastInput=performance.now(); if(KC.el.classList.contains('sleep')) catMood(null) }
+
+/* ================= LYRICS ================= */
+function toLines(html){ const sent=html.split(/(?<=[a-z0-9)>]{2}[.!?])\s+(?=[A-Z<])/); const out=[];
+  sent.forEach(s=>{ if(plain(s).length<=84){ out.push(s); return } let cur=''; s.split(/(?<=,)\s+/).forEach(part=>{ if(cur && plain(cur+' '+part).length>84){ out.push(cur); cur=part } else cur=cur?cur+' '+part:part }); if(cur) out.push(cur) });
+  return out }
+const lyHTML=lines=>`<div class="ly" id="ly"><div class="lyin">${lines.map((l,i)=>`<p data-l="${i}">${l}</p>`).join('')}</div></div>`;
+let LYT=0;
+function lyGo(v,i,auto=true){ const L=v.s.lines; if(!v.el.isConnected) return; clearTimeout(LYT); i=clamp(i,0,L.length-1); v.s.li=i;
+  const ps=v.el.querySelectorAll('.lyin p'), box=v.el.querySelector('#ly'), inn=v.el.querySelector('.lyin');
+  ps.forEach((p,k)=>{ p.classList.toggle('on',k===i); p.classList.toggle('past',k<i) });
+  const p=ps[i]; if(p&&box) inn.style.transform=`translateY(${Math.round(box.clientHeight*.3-p.offsetTop)}px)`;
+  if(!auto) return;
+  const next=()=>{ if(V!==v) return; if(i<L.length-1) lyGo(v,i+1); else lyDone(v) };
+  if(S.voice) say(plain(L[i]),next); else LYT=setTimeout(next, Math.max(1900, plain(L[i]).length*62)) }
+function lyDone(v){ hush(); v.el.querySelectorAll('.lyin p').forEach(p=>p.classList.add('past')) }
+function lyStop(){ clearTimeout(LYT); hush() }
+
+/* ================= VIEW SYSTEM ================= */
+const scr=$('#screen'), VW=$('#views');
+let V=null, VS=[], TAP={x:296,y:230,t:0}, MORPH=null;
+function rel(el){ const r=el.getBoundingClientRect(), s=scr.getBoundingClientRect(), k=s.width/296; return {x:(r.left-s.left+r.width/2)/k, y:(r.top-s.top+r.height/2)/k, l:(r.left-s.left)/k, t:(r.top-s.top)/k, w:r.width/k, h:r.height/k} }
+function mk(name,args={},sel){ const def=VIEWS[name], v={name,args,s:{},def}; v.sel= sel!=null? sel : def.initSel? def.initSel(v) : 0; return v }
+function origin(){ return performance.now()-TAP.t<700? TAP : {x:296,y:230} }
+function show(v,t='reveal',o){
+  lyStop();
+  const old=VW.querySelector('.view.live'), el=document.createElement('div'); el.className='view v-'+v.name+' live'; el.innerHTML=v.def.html(v); VW.appendChild(el); v.el=el; V=v; v.def.mount&&v.def.mount(v);
+  o=o||origin(); const ease='cubic-bezier(.7,0,.2,1)';
+  if(old){ old.classList.remove('live'); old.style.pointerEvents='none'; const kill=()=>old.remove();
+    if(t==='back'){ old.style.zIndex=2; old.animate([{clipPath:'circle(430px at 34px 32px)'},{clipPath:'circle(0px at 34px 32px)'}],{duration:540,easing:ease}).onfinish=kill;
+      el.animate([{transform:'scale(1.08)',filter:'blur(4px)'},{transform:'none',filter:'blur(0)'}],{duration:540,easing:'cubic-bezier(.2,.8,.2,1)'}) }
+    else if(t==='up'){ el.animate([{transform:'translateY(100%)',borderRadius:'28px 28px 0 0'},{transform:'none',borderRadius:'0'}],{duration:620,easing:'cubic-bezier(.22,1.15,.36,1)'});
+      old.animate([{transform:'none',opacity:1},{transform:'scale(.92)',opacity:.3}],{duration:620,easing:ease}).onfinish=kill }
+    else if(t==='down'){ old.style.zIndex=2; old.animate([{transform:'none'},{transform:'translateY(100%)'}],{duration:460,easing:'cubic-bezier(.6,0,.8,.4)'}).onfinish=kill;
+      el.animate([{transform:'scale(.92)',opacity:.3},{transform:'none',opacity:1}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)'}) }
+    else if(t==='morph'){ old.animate([{opacity:1},{opacity:0}],{duration:260}).onfinish=kill; el.animate([{opacity:0},{opacity:1}],{duration:200}) }
+    else { old.animate([{transform:'none',filter:'blur(0)',opacity:1},{transform:'scale(.88)',filter:'blur(6px)',opacity:.2}],{duration:620,easing:ease}).onfinish=kill;
+      el.animate([{clipPath:`circle(0px at ${o.x}px ${o.y}px)`},{clipPath:`circle(440px at ${o.x}px ${o.y}px)`}],{duration:640,easing:ease}) }
+    SFX.whoosh();
+  }
+  if(t==='morph'&&MORPH){ const h=el.querySelector('#hero'); if(h){ const r2=rel(h), r1=MORPH; h.animate([{transform:`translate(${r1.l-r2.l}px,${r1.t-r2.t}px) scale(${r1.w/r2.w},${r1.h/r2.h})`},{transform:'none'}],{duration:700,easing:'cubic-bezier(.2,.9,.1,1)'}) } MORPH=null }
+  KC.next=performance.now()+7000+Math.random()*4000;
+  /* Kesar arrives only after the screen has settled, so motion never stacks */
+  setTimeout(()=>{ if(V!==v) return; const sp=SPOTS[v.name]; if(sp&&sp.length){ catMood(v.name==='quirk'?'talk':null); catTo(['quirk','home','menu','saved','memory','place'].includes(v.name)?sp[0]:pick(sp)) } else catHide() }, v.name==='saved'?2100:t==='up'?160:680);
+}
+function push(name,args,t,o){ if(V) VS.push({name:V.name,args:V.args,sel:V.sel}); show(mk(name,args),t,o) }
+function back(){ if(V.def.onBack&&V.def.onBack(V)) return; const p=VS.pop(); if(p){ SFX.back(); show(mk(p.name,p.args,p.sel),V.name==='menu'?'down':'back') } else if(V.name!=='home'){ SFX.back(); toHome('back') } else { SFX.nope() } }
+function toHome(t='reveal'){ VS=[]; show(mk('home'),t,{x:148,y:148}) }
+let toastT=0;
+function toast(m,ms=2200){ const t=$('#toast'); t.hidden=false; t.textContent=m; t.style.animation='none'; void t.offsetWidth; t.style.animation=''; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,ms) }
+
+/* input */
+let ro=0;
+function roll(d){ if(!V) return; wake(); ro+=d*7; const p=$('#pocket'); p.querySelector('.roller').style.setProperty('--ro',ro+'px'); p.classList.remove('up','dn'); void p.offsetWidth; p.classList.add(d<0?'up':'dn'); clearTimeout(roll.t); roll.t=setTimeout(()=>p.classList.remove('up','dn'),160); SFX.tick(); buzz(4);
+  if(V.def.roll) return V.def.roll(V,d);
+  const n=V.def.count?V.def.count(V):0; if(!n) return; const ns=clamp(V.sel+d,0,n-1); if(ns!==V.sel){ V.sel=ns; V.def.update&&V.def.update(V) } }
+function ok(){ if(!V) return; wake(); ac(); buzz(10); V.def.ok? V.def.ok(V) : SFX.nope() }
+const backBtn=(c='')=>`<div class="bk tap ${c}" data-act="back" aria-label="Back">${ICO.back}</div>`;
+function paws(x,y,n=16){ const cols=['#C41E2A','#2449B3','#A88219','#24684A']; for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='paw'; p.innerHTML=PAW; p.style.left=x+'px'; p.style.top=y+'px'; p.style.color=cols[i%4]; scr.appendChild(p);
+  const a=Math.random()*Math.PI*2, d=60+Math.random()*90, rr=(Math.random()-.5)*540;
+  p.animate([{transform:'translate(-50%,-50%) scale(.2) rotate(0)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*d}px), calc(-50% + ${Math.sin(a)*d-20}px)) scale(1) rotate(${rr/2}deg)`,opacity:1,offset:.6},{transform:`translate(calc(-50% + ${Math.cos(a)*d*1.1}px), calc(-50% + ${Math.sin(a)*d+60}px)) scale(.8) rotate(${rr}deg)`,opacity:0}],{duration:1300+Math.random()*500,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>p.remove() } }
+const latestPhoto=()=>{ const m=S.mem.find(x=>x.photo); return m&&m.photo };
+
+/* the photo-stamp header + lyrics, shared by "saved" (fresh find) and "memory" (from the notebook) */
+function storyView(v,fresh){ const m=memById(v.args.id), p=byId(m.place), ag=v.args.again&&p.again; v.s.lines=toLines(ag?p.again.story:p.story);
+  const n=fresh&&nextPlace(p.id), ph=ag&&typeof m.again==='string'? m.again : m.photo;
+  const sub= fresh? (ph? `${found()}/${ALL.length} stamps · postmarked` : 'Add a photo later to postmark it') : (m.again?`${p.tag} · 2 visits`:p.tag);
+  return `<div class="lybg"${ph?` style="background-image:url(${ph})"`:''}>${ph?'':engr(p.id,inkOf(p))}</div>
+   <div class="shead"><div class="pt" id="pt">${photoStamp({...m,photo:ph},{post:false})}</div>
+    <div class="sh-t st" style="--d:${fresh?18:2}"><div class="tg">${fresh?(ag?p.again.tag:p.tag):SHORT(p)}</div><div class="sub">${sub}</div></div>${VOBTN(S.voice?'on':'')}</div>
+   ${lyHTML(v.s.lines)}
+   <div class="acts st" style="--d:${fresh?22:4}">${fresh? `<div class="btn tap" data-act="go">${n?`<span class="mini">${engr(n.id,inkOf(n))}</span>Next ${ICO.arrow}`:'See your book'}</div>`
+     : m.photo? (p.again&&!m.again? `<div class="btn tap" data-act="again">${ICO.eye} Second look</div>` : '') : `<div class="btn tap" data-act="go">${ICO.cam} Add photo</div>`}</div>` }
+function storyMount(v,fresh){ const el=v.el, m=memById(v.args.id), pt=el.querySelector('#pt');
+  const ph=v.args.again&&typeof m.again==='string'? m.again : m.photo;
+  el.querySelectorAll('.lyin p').forEach(p=>p.addEventListener('click',e=>{ e.stopPropagation(); hush(); lyGo(v,+p.dataset.l,false); SFX.tick() }));
+  if(!fresh){ if(m.photo) pt.firstElementChild.insertAdjacentHTML('beforeend',postmark(m.date)); setTimeout(()=>{ if(V===v) lyGo(v,0) },500); return }
+  const stampIt=()=>{ if(!ph||V!==v) return; pt.firstElementChild.insertAdjacentHTML('beforeend',postmark(m.date,v.args.again)); pt.querySelector('.pmk').classList.add('thunk'); SFX.thunk(); buzz(25) };
+  if(reduce){ stampIt(); setTimeout(()=>{ if(V===v) lyGo(v,0) },300); return }
+  const r=rel(pt), dx=148-r.x, dy=118-r.y;
+  pt.animate([{transform:`translate(${dx}px,${dy-260}px) scale(2.8) rotate(20deg)`},{transform:`translate(${dx}px,${dy}px) scale(2.8) rotate(-6deg)`,offset:.28},{transform:`translate(${dx}px,${dy}px) scale(2.75) rotate(-3deg)`,offset:.62},{transform:'rotate(-4deg)'}],{duration:2100,easing:'cubic-bezier(.3,.7,.3,1)'});
+  setTimeout(()=>paws(148,118),560); setTimeout(stampIt,900);
+  setTimeout(()=>{ if(V===v) lyGo(v,0) },2100) }
+const storyRoll=(v,d)=>{ hush(); lyGo(v,(v.s.li||0)+d,false) };
+const storyVoice=(v,b)=>{ S.voice=!S.voice; save(); b.classList.toggle('on',S.voice); hush(); lyGo(v,v.s.li==null?0:v.s.li) };
+
+const VIEWS={
+ boot:{ html:()=>`<div class="boot"><div class="logo">${bt('ghumo')}</div></div>`, mount(){ setTimeout(()=>{ if(V.name==='boot') toHome() },1400) }, ok(){ toHome() } },
+ home:{
+  html(){ return `<div class="sbar"><span class="prog"><i></i>${found()}/${ALL.length} stamps</span><span class="bat"><i></i>83%</span></div><div class="clock">${clockText()}</div>
+    <div class="hline">${catLine()}</div><div class="hdots">${ALL.map(p=>`<i class="${memFor(p.id)?'f':''}"></i>`).join('')}</div>` },
+  mount(v){ v.el.addEventListener('click',e=>{ if(e.target.closest('.kc')) return; ok() }) },
+  roll(v){ this.ok(v) },
+  sec(v){ const c=v.el.querySelector('.clock'); if(c) c.textContent=clockText() },
+  ok(v){ SFX.ok(); catMood(null); push('menu',{},'up') }
+ },
+ menu:{
+  count:()=>4,
+  html(v){ const R=[...ORDER.map(k=>[k,LISTS[k].label,LISTS[k].ink,LISTS[k].img]),['notebook','Your book','green','walk']];
+   return `<div class="mtop"><span class="mtime">${clockText()}</span><div class="bk tap" data-act="back" aria-label="Close">${ICO.down}</div></div>
+    <div class="mgrid">${R.map(([k,l,ink,img],i)=>{ const its=k==='notebook'?ALL:LISTS[k].items, n=its.filter(p=>memFor(p.id)).length, ph=k==='notebook'&&latestPhoto();
+     const inner= ph? `<div class="sph" style="background-image:url(${ph})"></div>` : `<div class="si" style="--m:url(stamps/${img}.png)"></div>`;
+     return `<div class="stamp mcard tap st ${ink==='mus'?'dk':''} ${i===v.sel?'on':''}" style="--d:${i};--ink:var(--i-${ink})" data-i="${i}"><div class="sp">${inner}<span class="lb">${l}</span><span class="ct">${n}/${its.length}</span></div></div>` }).join('')}</div>` },
+  update(v){ v.el.querySelectorAll('.mcard').forEach((t,i)=>t.classList.toggle('on',i===v.sel)) },
+  tap(v,i){ v.sel=i; this.update(v); this.ok(v) },
+  ok(v){ SFX.ok(); const o=rel(v.el.querySelectorAll('.mcard')[v.sel]); if(v.sel===3) push('notebook',{},'reveal',o); else push('list',{k:ORDER[v.sel]},'reveal',o) }
+ },
+ list:{
+  initSel(v){ return Math.max(0,LISTS[v.args.k].items.findIndex(p=>!memFor(p.id))) },
+  count:v=>LISTS[v.args.k].items.length,
+  html(v){ const L=LISTS[v.args.k], n=L.items.filter(p=>memFor(p.id)).length;
+   return `<div class="top">${backBtn()}<div class="ttl">${bt(L.label)}<small>${n}/${L.items.length}</small></div></div>
+    <div class="car" id="car">${L.items.map((p,i)=>{ const m=memFor(p.id); return placeStamp(byId(p.id),{cls:'card',post:!!(m&&m.photo),date:m&&m.date}).replace('class="stamp card"',`class="stamp card" data-i="${i}"`) }).join('')}</div>
+    <div class="dots">${L.items.map((p,i)=>`<i data-dot="${i}" class="${memFor(p.id)?'f':''}"></i>`).join('')}</div>` },
+  mount(v){ this.update(v,true); const car=v.el.querySelector('#car'); let x0=null, dx=0;
+   car.addEventListener('pointerdown',e=>{ x0=e.clientX; dx=0; v.s.dragged=false });
+   car.addEventListener('pointermove',e=>{ if(x0==null) return; const k=scr.getBoundingClientRect().width/296; dx=(e.clientX-x0)/k; if(Math.abs(dx)>6){ v.s.dragged=true; car.classList.add('drag'); this.update(v,false,dx) } });
+   const end=()=>{ if(x0==null) return; x0=null; car.classList.remove('drag'); if(Math.abs(dx)>40){ const n=this.count(v); const ns=clamp(v.sel-Math.sign(dx)*(Math.abs(dx)>150?2:1),0,n-1); if(ns!==v.sel){ v.sel=ns; SFX.tick(); buzz(6) } } this.update(v); setTimeout(()=>v.s.dragged=false,30) };
+   car.addEventListener('pointerup',end); car.addEventListener('pointerleave',end); car.addEventListener('pointercancel',end);
+   v.el.querySelectorAll('[data-dot]').forEach(d=>d.addEventListener('click',e=>{ e.stopPropagation(); v.sel=+d.dataset.dot; SFX.tick(); this.update(v) })) },
+  update(v,first,drag=0){ v.el.querySelectorAll('.card').forEach((c,i)=>{ const o=i-v.sel, a=Math.abs(o), x=o*168+drag;
+    c.style.transform=`translateX(${x}px) translateZ(${-a*70}px) rotateY(${clamp(-x/5,-32,32)}deg) rotate(${o?o*3:0}deg) scale(${a?.84:1})`;
+    c.style.opacity=a>2?0:a?.55:1; c.style.zIndex=10-a; c.classList.toggle('on',!o);
+    if(first&&!reduce) c.animate([{transform:`translateX(${x+260}px) rotateY(-40deg) scale(.7)`,opacity:0},{transform:c.style.transform,opacity:c.style.opacity}],{duration:800+i*60,easing:'cubic-bezier(.22,1.25,.36,1)'}) });
+   v.el.querySelectorAll('[data-dot]').forEach((d,i)=>d.classList.toggle('on',i===v.sel)) },
+  tap(v,i){ if(v.s.dragged) return; if(i!==v.sel){ v.sel=i; SFX.tick(); this.update(v) } else this.ok(v) },
+  ok(v){ SFX.ok(); const c=v.el.querySelector('.card.on'); MORPH=rel(c); push('place',{p:LISTS[v.args.k].items[v.sel]},'morph') }
+ },
+ place:{
+  html(v){ const p=byId(v.args.p.id), m=memFor(p.id), far=YOU.real&&km(p)>.6;
+   return `${placeStamp(p,{cls:'hero',hero:true,post:!!(m&&m.photo),date:m&&m.date}).replace('class="stamp hero"','class="stamp hero" id="hero"')}${backBtn('l')}${VOBTN('r')}
+    <div class="pn">${bt(p.name)}</div>
+    <div class="meta st" style="--d:3">${ICO.pin}<b>${dist(p)}</b><span>· ${p.area}${p.when?' · '+p.when:''}</span></div>
+    ${far&&!m?`<div class="nudge st" style="--d:4">You're ${dist(p)} away. Kesar will wait till you get there.</div>`:''}
+    <div class="acts st" style="--d:5">${m? `<div class="btn tap" data-act="go">Open stamp ${ICO.arrow}</div>${p.again&&m.photo&&!m.again?`<div class="btn alt tap" data-act="again" aria-label="Second look">${ICO.eye}</div>`:''}`
+      : `<div class="btn tap" data-act="go">I'm here ${ICO.arrow}</div>`}<a class="btn alt tap" href="${mapsLink(p)}" target="_blank" rel="noopener" aria-label="Directions">${ICO.dir}</a></div>` },
+  act(v,a,b){ const p=byId(v.args.p.id); if(a==='go') this.ok(v); if(a==='again'){ SFX.ok(); push('quirk',{p,again:true},'reveal',rel(b)) }
+   if(a==='voice'){ if(b.classList.contains('on')){ hush(); b.classList.remove('on'); return } hush(); b.classList.add('on'); say(`${p.name}. ${p.what}`,()=>{ b.classList.remove('on'); catMood(null) }) } },
+  ok(v){ const p=byId(v.args.p.id), m=memFor(p.id); SFX.ok(); if(m) return push('memory',{id:m.id});
+   /* with real GPS, a far-away "I'm here" asks once before going on */
+   if(YOU.real&&km(p)>.6&&!v.s.warned){ v.s.warned=true; toast(`You're ${dist(p)} away. Press again if you're really here.`); return }
+   push('quirk',{p},'reveal',rel(v.el.querySelector('.btn'))) }
+ },
+ quirk:{
+  html(){ return `<div class="top">${backBtn()}</div><div class="bub"><span id="q"></span><span class="caret"></span></div>
+    <div class="acts"><div class="btn tap st" style="--d:6" data-act="go">${ICO.cam} Found it</div></div>` },
+  mount(v){ v.s.n=0; v.s.text=v.args.again? v.args.p.again.prompt : v.args.p.prompt; SFX.meow() },
+  tick(v,dt){ const p=v.s.text; if(v.s.n>=p.length) return; v.s.n=Math.min(p.length,v.s.n+dt*62); const q=v.el.querySelector('#q'); if(q) q.textContent=p.slice(0,Math.floor(v.s.n)); if(v.s.n>=p.length){ catMood(null); const c=v.el.querySelector('.caret'); if(c) c.remove() } },
+  act(v,a){ if(a==='go') this.ok(v) },
+  ok(v){ if(v.s.n<v.s.text.length){ v.s.n=v.s.text.length-1; return } SFX.ok(); catMood(null); show(mk('finder',{p:v.args.p,again:v.args.again}),'reveal',rel(v.el.querySelector('.btn'))) },
+  onBack(){ catMood(null); return false }
+ },
+ finder:{
+  count:()=>2,
+  html(v){ const p=v.args.p;
+   return `<div class="vf"><canvas id="grain" width="74" height="74"></canvas></div><div class="br a"></div><div class="br b"></div><div class="br c"></div><div class="br d"></div>
+    <div class="vtag">${v.args.again?p.again.tag:p.tag}</div><div class="ret"></div>${backBtn()}
+    ${v.args.again?'':`<div class="skip tap ${v.sel===1?'on':''}" data-i="1">No photo</div>`}<div class="shut tap ${v.sel===0?'on':''}" data-i="0" aria-label="Snap proof"></div>` },
+  update(v){ v.el.querySelector('.shut').classList.toggle('on',v.sel===0); const s=v.el.querySelector('.skip'); s&&s.classList.toggle('on',v.sel===1) },
+  count(v){ return v.args.again?1:2 },
+  tick(v){ const c=v.el.querySelector('#grain'); if(!c) return; const g=c.getContext('2d'), im=g.createImageData(74,74); for(let i=0;i<im.data.length;i+=4){ const x=Math.random()*70; im.data[i]=im.data[i+1]=im.data[i+2]=x; im.data[i+3]=70 } g.putImageData(im,0,0) },
+  tap(v,i){ v.sel=i; this.update(v); this.ok(v) },
+  ok(v){ const p=v.args.p;
+   if(v.sel===0){ pending={p,again:v.args.again}; const i=$('#photo'); i.value=''; i.click(); iris(); SFX.shutter(); const l=$('#lens'); l.classList.remove('flash'); void l.offsetWidth; l.classList.add('flash') }
+   else { iris(); setTimeout(()=>keep(p,null),420) } },
+  onBack(v){ SFX.back(); show(mk('quirk',{p:v.args.p,again:v.args.again}),'back'); return true }
+ },
+ saved:{
+  html(v){ return storyView(v,true) },
+  mount(v){ SFX.saved(); buzz([30,40,70]); storyMount(v,true) },
+  roll:storyRoll,
+  act(v,a,b){ if(a==='go') this.ok(v); if(a==='voice') storyVoice(v,b) },
+  ok(v){ const m=memById(v.args.id), n=nextPlace(m.place); SFX.ok(); const o=rel(v.el.querySelector('.btn'));
+   VS=[{name:'home',args:{},sel:0},{name:'menu',args:{},sel:n?ORDER.indexOf(n.list):3}];
+   if(n){ const L=LISTS[n.list], it=L.items.find(x=>x.id===n.id); VS.push({name:'list',args:{k:n.list},sel:L.items.indexOf(it)}); show(mk('place',{p:it}),'reveal',o) } else show(mk('notebook'),'reveal',o) },
+  onBack(v){ this.ok(v); return true }
+ },
+ notebook:{
+  count:()=>ALL.length,
+  html(v){ const sorted=ALL.slice().sort((a,b)=>{ const ma=memFor(a.id), mb=memFor(b.id); return (mb?mb.date:0)-(ma?ma.date:0) }); v.s.order=sorted;
+   return `<div class="top">${backBtn()}<div class="ttl">${bt('Your book')}<small>${found()}/${ALL.length}</small></div><div class="bk tap share" data-act="share" aria-label="Share">${ICO.share}</div></div>
+    <div class="nb" id="nb">${sorted.map((p,i)=>{ const m=memFor(p.id);
+      return m? `<div class="pm tap st ${i===v.sel?'on':''}" data-i="${i}" style="--d:${Math.min(i,8)};--r:${[-3,2,-1.5,3,-3.5,1.5][i%6]}deg">${m.photo?photoStamp(m):`<div class="stamp" style="--ink:${inkOf(p)}"><div class="sp"><div class="sph add">${ICO.cam}<span>Add photo</span></div></div></div>`}<div class="c">${SHORT(p)}</div></div>`
+       : `<div class="pm ghost tap st ${i===v.sel?'on':''}" data-i="${i}" style="--d:${Math.min(i,8)}"><div class="hole">${NO(p)}</div><div class="c">${SHORT(p)}</div></div>` }).join('')}</div>` },
+  update(v){ v.el.querySelectorAll('.pm').forEach((t,i)=>t.classList.toggle('on',i===v.sel)); const on=v.el.querySelector('.pm.on'); on&&on.scrollIntoView({block:'nearest',behavior:'smooth'}) },
+  tap(v,i){ v.sel=i; this.update(v); this.ok(v) },
+  act(v,a){ if(a==='share') makeCard() },
+  ok(v){ const p=v.s.order[v.sel], m=memFor(p.id); SFX.ok(); const o=rel(v.el.querySelectorAll('.pm')[v.sel]);
+   if(m) push('memory',{id:m.id},'reveal',o); else push('place',{p},'reveal',o) }
+ },
+ memory:{
+  html(v){ return storyView(v,false) },
+  mount(v){ storyMount(v,false) },
+  roll:storyRoll,
+  act(v,a,b){ if(a==='go') this.ok(v); if(a==='voice') storyVoice(v,b); if(a==='again'){ const p=byId(memById(v.args.id).place); SFX.ok(); push('quirk',{p,again:true},'reveal',rel(b)) } },
+  ok(v){ const m=memById(v.args.id); if(m.photo){ const p=byId(m.place); if(p.again&&!m.again){ SFX.ok(); return push('quirk',{p,again:true}) } return back() } SFX.shutter(); pending={p:byId(m.place)}; const i=$('#photo'); i.value=''; i.click() }
+ }
+};
+
+function iris(){ if(reduce) return; const d=document.createElement('div'); d.className='iris'; scr.appendChild(d);
+  d.animate([{width:'460px',height:'460px'},{width:'0px',height:'0px',offset:.45},{width:'0px',height:'0px',offset:.55},{width:'460px',height:'460px'}],{duration:620,easing:'cubic-bezier(.7,0,.3,1)'}).onfinish=()=>d.remove() }
+
+/* proof photo */
+let pending=null;
+function keep(p,photo,again){
+  let m=memFor(p.id);
+  if(again&&m){ m.again=photo||true; save(); return show(mk('saved',{id:m.id,again:true}),'reveal',{x:148,y:250}) }
+  if(m){ if(photo){ m.photo=photo; m.date=Date.now() } }
+  else { m={id:'m'+Date.now().toString(36),place:p.id,date:Date.now(),photo}; S.mem.unshift(m) }
+  save();
+  show(mk(V.name==='memory'?'memory':'saved',{id:m.id}),'reveal',{x:148,y:250});
+}
+$('#photo').addEventListener('change',e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!pending) return; const rd=new FileReader();
+  rd.onload=()=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,560/Math.max(img.width,img.height)), c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); const q=pending; pending=null; keep(q.p,c.toDataURL('image/jpeg',.78),q.again) }; img.src=rd.result };
+  rd.readAsDataURL(f) });
+
+/* share: a full sheet of 15 stamps, collected ones cancelled */
+const loadImg=src=>new Promise(r=>{ const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src });
+function perf(g,x,y,w,h,r=7,step=20){ g.save(); g.globalCompositeOperation='destination-out'; g.beginPath();
+  for(let i=0;i<=w;i+=w/Math.round(w/step)){ g.moveTo(x+i+r,y); g.arc(x+i,y,r,0,7); g.moveTo(x+i+r,y+h); g.arc(x+i,y+h,r,0,7) }
+  for(let j=0;j<=h;j+=h/Math.round(h/step)){ g.moveTo(x+r,y+j); g.arc(x,y+j,r,0,7); g.moveTo(x+w+r,y+j); g.arc(x+w,y+j,r,0,7) }
+  g.fill(); g.restore() }
+async function makeCard(){
+  try{ await document.fonts.load('400 80px "Geist Pixel"'); await document.fonts.load('600 30px Geist'); await document.fonts.load('700 30px Geist') }catch(e){}
+  const light=scr.dataset.mode==='light', W=1080,H=1350,c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  const BG=light?'#ECE8DF':'#0B0B0E', FG=light?'#151517':'#F5F4F0', PAPER=light?'#FCFAF5':'#F3EEE3', INK={blue:'#2449B3',red:'#C41E2A',mus:'#A88219',green:'#24684A'};
+  g.fillStyle=BG; g.fillRect(0,0,W,H);
+  g.fillStyle=FG; g.font='400 92px "Geist Pixel", Geist, sans-serif'; g.fillText('My Ahmedabad',64,150);
+  g.globalAlpha=.6; g.font='600 34px Geist, sans-serif'; g.fillText(`${found()} of ${ALL.length} stamps collected`,68,206); g.globalAlpha=1;
+  const masks=await Promise.all(ALL.map(p=>loadImg(`stamps/${p.id}.png`))), photos=await Promise.all(ALL.map(p=>{ const m=memFor(p.id); return m&&m.photo? loadImg(m.photo) : null }));
+  const sw=300, sh=196, gx=30, gy=22, x0=(W-3*sw-2*gx)/2, y0=258;
+  ALL.forEach((p,i)=>{ const x=x0+(i%3)*(sw+gx), y=y0+Math.floor(i/3)*(sh+gy), m=memFor(p.id), ink=INK[INKS[i%4]];
+    const o=document.createElement('canvas'); o.width=sw+20; o.height=sh+20; const q=o.getContext('2d');
+    if(!m){ q.strokeStyle=light?'rgba(21,21,23,.25)':'rgba(245,244,240,.22)'; q.setLineDash([8,7]); q.lineWidth=2.5; q.strokeRect(12,12,sw-4,sh-4); q.fillStyle=light?'rgba(21,21,23,.4)':'rgba(245,244,240,.35)'; q.font='400 30px "Geist Pixel", Geist, sans-serif'; q.textAlign='center'; q.fillText(NO(p),10+sw/2,10+sh/2+10); g.drawImage(o,x-10,y-10); return }
+    q.fillStyle=PAPER; q.fillRect(10,10,sw,sh); perf(q,10,10,sw,sh);
+    const ix=24, iy=24, iw=sw-28, ih=sh-62, im=photos[i]||masks[i];
+    if(im){ const t=document.createElement('canvas'); t.width=iw; t.height=ih; const tg=t.getContext('2d'); const s=Math.max(iw/im.width,ih/im.height); tg.drawImage(im,(iw-im.width*s)/2,(ih-im.height*s)/2,im.width*s,im.height*s);
+      if(!photos[i]){ tg.globalCompositeOperation='source-in'; tg.fillStyle=ink; tg.fillRect(0,0,iw,ih) } q.drawImage(t,ix,iy) }
+    q.fillStyle='#161514'; q.font='600 22px Geist, sans-serif'; q.fillText(SHORT(p),ix,sh-6);
+    q.fillStyle=ink; q.font='400 22px "Geist Pixel", Geist, sans-serif'; q.textAlign='right'; q.fillText(NO(p),sw-4,sh-6);
+    if(m.photo){ q.save(); q.translate(sw-70,64); q.rotate(-.25); q.strokeStyle='rgba(22,21,20,.75)'; q.lineWidth=3.5; q.beginPath(); q.arc(0,0,44,0,7); q.stroke(); q.lineWidth=1.8; q.beginPath(); q.arc(0,0,34,0,7); q.stroke();
+      q.fillStyle='rgba(22,21,20,.8)'; q.textAlign='center'; q.font='400 15px "Geist Pixel", Geist, sans-serif'; q.fillText('GHUMO',0,5); q.restore() }
+    g.save(); g.translate(x+sw/2,y+sh/2); g.rotate(((i*37)%7-3)*Math.PI/360); g.shadowColor='rgba(0,0,0,.35)'; g.shadowBlur=18; g.shadowOffsetY=6; g.drawImage(o,-sw/2-10,-sh/2-10); g.restore() });
+  const ci=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(CAT.replace(/<g class="eyes-[hs]"[\s\S]*?<\/g>/g,'').replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" ')));
+  if(ci) g.drawImage(ci,W-200,40,150,150);
+  $('#card').src=c.toDataURL('image/png');
+  $('#capt').textContent=`${found()} of ${ALL.length} Ahmedabad stamps collected${S.mem.length?': '+S.mem.slice(0,3).map(m=>SHORT(byId(m.place))).join(', '):''}. Found with Kesar the cat.`;
+  $('#modal').hidden=false; $('#copyCap').textContent='Copy caption';
+}
+$('#closeM').onclick=()=>$('#modal').hidden=true;
+$('#modal').addEventListener('pointerdown',e=>{ if(e.target.id==='modal') $('#modal').hidden=true });
+$('#copyCap').onclick=()=>{ const b=$('#copyCap'), sel=()=>{ const r=document.createRange(); r.selectNodeContents($('#capt')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent='Selected. Press copy' };
+  try{ navigator.clipboard.writeText($('#capt').textContent).then(()=>b.textContent='Copied',sel) }catch(e){ sel() } };
+
+/* ================= WIRING ================= */
+$('#ok').addEventListener('click',()=>{ TAP={x:296,y:230,t:0}; ok() });
+$('#back').addEventListener('click',()=>{ ac(); wake(); buzz(8); back() });
+{ const d=$('#pocket'); let y0=null, acc=0, moved=false;
+  d.addEventListener('pointerdown',e=>{ ac(); y0=e.clientY; moved=false; d.setPointerCapture(e.pointerId) });
+  d.addEventListener('pointermove',e=>{ if(y0==null) return; acc+=e.clientY-y0; y0=e.clientY; while(Math.abs(acc)>=14){ moved=true; const s=Math.sign(acc); acc-=s*14; roll(s) } });
+  d.addEventListener('pointerup',e=>{ if(!moved&&y0!=null){ const r=d.getBoundingClientRect(); roll(e.clientY<r.top+r.height/2?-1:1) } y0=null; acc=0 });
+  d.addEventListener('pointercancel',()=>{ y0=null; acc=0 });
+  let wa=0; const onW=e=>{ if(e.target.closest('.nb')) return; e.preventDefault(); wa+=e.deltaY+e.deltaX; if(Math.abs(wa)>=40){ roll(Math.sign(wa)); wa=0 } };
+  d.addEventListener('wheel',onW,{passive:false}); scr.addEventListener('wheel',onW,{passive:false}); }
+scr.addEventListener('pointerdown',e=>{ wake(); const s=scr.getBoundingClientRect(), k=s.width/296; TAP={x:(e.clientX-s.left)/k, y:(e.clientY-s.top)/k, t:performance.now()};
+  const t=e.target.closest('.tap'); if(t&&!reduce&&!t.classList.contains('stamp')){ const r=t.getBoundingClientRect(), rp=document.createElement('span'); rp.className='rip'; rp.style.left=(e.clientX-r.left)/k+'px'; rp.style.top=(e.clientY-r.top)/k+'px'; if(getComputedStyle(t).position==='static') t.style.position='relative'; t.style.overflow='hidden'; t.appendChild(rp); setTimeout(()=>rp.remove(),650) } });
+VW.addEventListener('click',e=>{ if(!V||e.target.closest('a')) return; ac();
+  const a=e.target.closest('[data-act]'); if(a){ e.stopPropagation(); if(a.dataset.act==='back') back(); else V.def.act&&V.def.act(V,a.dataset.act,a); return }
+  const t=e.target.closest('[data-i]'); if(!t) return; e.stopPropagation(); const i=+t.dataset.i; if(V.def.tap) V.def.tap(V,i); else { V.sel=i; ok() } },true);
+addEventListener('keydown',e=>{
+  if(!$('#modal').hidden){ if(e.key==='Escape') $('#modal').hidden=true; return }
+  if(e.target.closest&&e.target.closest('.manual')) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const k=e.key; let hit=true;
+  if(V&&V.name==='menu'&&(k==='ArrowUp'||k==='ArrowDown')) roll(k==='ArrowUp'?-2:2);
+  else if(k==='ArrowUp'||k==='ArrowLeft') roll(-1); else if(k==='ArrowDown'||k==='ArrowRight') roll(1);
+  else if(k===' '||k==='Enter'){ if(!e.repeat){ $('#ok').classList.add('down'); TAP.t=0; ok() } }
+  else if(k==='Escape'||k==='Backspace'){ $('#back').classList.add('down'); wake(); back() }
+  else hit=false;
+  if(hit) e.preventDefault() });
+addEventListener('keyup',()=>{ $('#ok').classList.remove('down'); $('#back').classList.remove('down') });
+
+const SHELLS=['stone','sage','ink'];
+function setShell(s){ if(!SHELLS.includes(s)) s='stone'; S.shell=s; $('#device').dataset.shell=s; document.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.shell===s)); save() }
+document.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{ setShell(b.dataset.shell); ac(); SFX.pop() }));
+/* screen mode: auto follows the system, or pin dark / light */
+const darkMQ=matchMedia('(prefers-color-scheme: dark)');
+function applyMode(){ const m=S.mode==='auto'? (darkMQ.matches?'dark':'light') : S.mode; scr.dataset.mode=m; document.querySelectorAll('#mode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===S.mode)) }
+document.querySelectorAll('#mode button').forEach(b=>b.addEventListener('click',()=>{ S.mode=b.dataset.mode; save(); applyMode(); ac(); SFX.pop() }));
+darkMQ.addEventListener&&darkMQ.addEventListener('change',applyMode);
+$('#cred').innerHTML=ALL.map(p=>{ const c=CRED[p.id]; return `<li>${SHORT(p)}: <a href="${c[2]}" target="_blank" rel="noopener">${c[0]}</a>, ${c[1]}</li>` }).join('');
+{ let armed=0; const r=$('#reset'); r.addEventListener('click',()=>{ if(!armed){ armed=setTimeout(()=>{ armed=0; r.textContent='Clear notebook'; r.classList.remove('armed') },3500); r.textContent='Click again to delete every stamp'; r.classList.add('armed'); return }
+  clearTimeout(armed); armed=0; const sh=S.shell, md=S.mode; S=fresh(); S.shell=sh; S.mode=md; S.seen=Date.now(); save(); r.textContent='Clear notebook'; r.classList.remove('armed'); toHome() }) }
+
+function fit(){ const w=$('#stage').clientWidth, narrow=innerWidth<=920; const s=Math.min(w/524, narrow?1:(innerHeight-30)/470, 1.3); document.documentElement.style.setProperty('--s',Math.max(.5,s).toFixed(3)) }
+addEventListener('resize',fit); fit();
+if(!reduce) addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse') return; const d=$('#device'); d.style.setProperty('--ry',((e.clientX/innerWidth-.5)*10).toFixed(2)+'deg'); d.style.setProperty('--rx',((.5-e.clientY/innerHeight)*7).toFixed(2)+'deg') });
+if(TTS) TTS.onvoiceschanged=()=>{};
+
+let last=performance.now(), sec=0;
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(V){ V.def.tick&&V.def.tick(V,dt);
+    if((sec+=dt)>1){ sec=0; V.def.sec&&V.def.sec(V) }
+    const home=V.name==='home', asleep=KC.el.classList.contains('sleep');
+    if(home && !asleep && KC.cur&&KC.cur.home&&!KC.hidden && now-lastInput>22000){ catMood('sleep'); const l=V.el.querySelector('.hline'); if(l) l.textContent='Kesar is napping. Press anything.' }
+    if(asleep && now>zT){ zT=now+1600; const c=KC.cur; if(c){ const z=document.createElement('div'); z.className='zz'; z.textContent='z'; z.style.left=(c.cx+30*c.s)+'px'; z.style.top=(c.cy-44*c.s)+'px'; scr.appendChild(z); setTimeout(()=>z.remove(),2500) } }
+    if(!asleep && !KC.busy && now>KC.next && !['quirk','boot','menu','saved','memory','place'].includes(V.name)){ KC.next=now+9000+Math.random()*5000;
+      if(home && Math.random()<.3) cameo(); else wander() } }
+  requestAnimationFrame(loop) }
+
+applyMode(); setShell(S.shell); show(mk('boot'),'reveal',{x:148,y:148}); requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>
